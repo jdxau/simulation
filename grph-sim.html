@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Graphing Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjs@11.6.0/lib/browser/math.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --border: #bdc3c7;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .calculator-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1024px) {
+            .calculator-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .graph-container {
+            position: relative;
+            height: 600px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--dark);
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+        
+        .function-input {
+            display: flex;
+            margin-bottom: 15px;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .function-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .function-input button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .function-input button:hover {
+            background: #c0392b;
+        }
+        
+        .domain-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .domain-controls input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tools button {
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 16px;
+        }
+        
+        .tools button:hover {
+            background: #2980b9;
+        }
+        
+        .tools button.active {
+            background: var(--secondary);
+        }
+        
+        .function-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .function-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+        
+        .function-item:last-child {
+            border-bottom: none;
+        }
+        
+        .function-item .color-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        
+        .function-item .remove-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
+        .results-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .results-panel h3 {
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .results-content {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .point-info {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .tip {
+            background: #fff8e1;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            border-left: 3px solid #ffc107;
+        }
+        
+        .tip ul {
+            padding-left: 20px;
+            margin-top: 5px;
+        }
+        
+        .tip li {
+            margin-bottom: 5px;
+        }
+        
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .controls-header h2 {
+            color: var(--dark);
+        }
+        
+        .clear-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .clear-btn:hover {
+            background: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <h1>Advanced Graphing Calculator</h1>
+    
+    <div class="calculator-container">
+        <div class="panel">
+            <div class="controls-header">
+                <h2>Function Controls</h2>
+                <button class="clear-btn" id="clearAll">Clear All</button>
+            </div>
+            
+            <div class="function-input">
+                <input type="text" id="functionInput" placeholder="Enter function (e.g., x^2 + 3*x)" value="x^2 + 3*x">
+                <button id="addFunction">Add</button>
+            </div>
+            
+            <div class="tip">
+                <strong>Supported functions:</strong>
+                <ul>
+                    <li>Basic operators: + - * / ^</li>
+                    <li>Trigonometric: sin, cos, tan, asin, acos, atan</li>
+                    <li>Logarithms: log, log10, ln</li>
+                    <li>Exponential: exp, sqrt</li>
+                    <li>Constants: pi, e</li>
+                    <li>Example: 2*sin(pi*x) + 3*cos(2*x)</li>
+                </ul>
+            </div>
+            
+            <div class="domain-controls">
+                <input type="number" id="xMin" placeholder="X Min" value="-10">
+                <input type="number" id="xMax" placeholder="X Max" value="10">
+            </div>
+            
+            <div class="tools">
+                <button id="zoomIn">Zoom In</button>
+                <button id="zoomOut">Zoom Out</button>
+                <button id="findRoots">Find Roots</button>
+                <button id="findIntersections">Find Intersections</button>
+                <button id="traceMode" class="active">Trace Points</button>
+            </div>
+            
+            <div class="function-list" id="functionList">
+                <!-- Functions will be added here -->
+            </div>
+            
+            <div class="results-panel">
+                <h3>Analysis Results</h3>
+                <div class="results-content" id="results">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="graph-container">
+                <canvas id="graphCanvas"></canvas>
+                <div class="point-info" id="pointInfo"></div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        Advanced Graphing Calculator &copy; 2023 | Move mouse over graph to trace points
+    </footer>
+
+    <script>
+        const functions = [];
+        const colors = [
+            '#3498db', '#e74c3c', '#2ecc71', '#f39c12', 
+            '#9b59b6', '#1abc9c', '#d35400', '#34495e'
+        ];
+        let chart;
+        let currentColorIndex = 0;
+        let traceMode = true;
+        let currentX = 0;
+        
+        const functionInput = document.getElementById('functionInput');
+        const addFunctionBtn = document.getElementById('addFunction');
+        const functionList = document.getElementById('functionList');
+        const xMinInput = document.getElementById('xMin');
+        const xMaxInput = document.getElementById('xMax');
+        const zoomInBtn = document.getElementById('zoomIn');
+        const zoomOutBtn = document.getElementById('zoomOut');
+        const findRootsBtn = document.getElementById('findRoots');
+        const findIntersectionsBtn = document.getElementById('findIntersections');
+        const traceModeBtn = document.getElementById('traceMode');
+        const resultsDiv = document.getElementById('results');
+        const pointInfo = document.getElementById('pointInfo');
+        const clearAllBtn = document.getElementById('clearAll');
+        const graphCanvas = document.getElementById('graphCanvas');
+        
+        function initCalculator() {
+            createChart();
+            addFunction();
+            addFunctionBtn.addEventListener('click', addFunction);
+            functionInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addFunction();
+            });
+            zoomInBtn.addEventListener('click', () => adjustZoom(0.8));
+            zoomOutBtn.addEventListener('click', () => adjustZoom(1.2));
+            findRootsBtn.addEventListener('click', findRoots);
+            findIntersectionsBtn.addEventListener('click', findIntersections);
+            traceModeBtn.addEventListener('click', toggleTraceMode);
+            clearAllBtn.addEventListener('click', clearAll);
+            xMinInput.addEventListener('change', updateChart);
+            xMaxInput.addEventListener('change', updateChart);
+            graphCanvas.addEventListener('mousemove', handleMouseMove);
+            graphCanvas.addEventListener('mouseleave', () => {
+                pointInfo.style.display = 'none';
+            });
+        }
+        
+        function createChart() {
+            const ctx = graphCanvas.getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'center',
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return Math.round(value * 100) / 100;
+                                }
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'center',
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return Math.round(value * 100) / 100;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            });
+        }
+        
+        function addFunction() {
+            const expression = functionInput.value.trim();
+            if (!expression) return;
+            try {
+                const testFn = math.compile(expression);
+                testFn.evaluate({x: 0});
+                const color = colors[currentColorIndex % colors.length];
+                currentColorIndex++;
+                functions.push({
+                    expression,
+                    fn: testFn,
+                    color,
+                    visible: true
+                });
+                renderFunctionList();
+                updateChart();
+                functionInput.value = '';
+            } catch (error) {
+                showError(`Invalid function: ${error.message}`);
+            }
+        }
+        
+        function renderFunctionList() {
+            functionList.innerHTML = '';
+            functions.forEach((fn, index) => {
+                const item = document.createElement('div');
+                item.className = 'function-item';
+                item.innerHTML = `
+                    <div>
+                        <span class="color-indicator" style="background:${fn.color}"></span>
+                        <span>${fn.expression}</span>
+                    </div>
+                    <button class="remove-btn" data-index="${index}">×</button>
+                `;
+                item.querySelector('.remove-btn').addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    functions.splice(index, 1);
+                    renderFunctionList();
+                    updateChart();
+                });
+                functionList.appendChild(item);
+            });
+        }
+        
+        function updateChart() {
+            if (!chart) return;
+            const xMin = parseFloat(xMinInput.value) || -10;
+            const xMax = parseFloat(xMaxInput.value) || 10;
+            const datasets = functions.map(fn => {
+                const points = generateFunctionPoints(fn.fn, xMin, xMax, 500);
+                return {
+                    label: `y = ${fn.expression}`,
+                    data: points,
+                    borderColor: fn.color,
+                    backgroundColor: 'rgba(0, 0, 0, 0)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.1,
+                    fill: false
+                };
+            });
+            chart.data.datasets = datasets;
+            chart.options.scales.x.min = xMin;
+            chart.options.scales.x.max = xMax;
+            chart.update();
+        }
+        
+        function generateFunctionPoints(fn, xMin, xMax, pointCount = 200) {
+            const points = [];
+            const step = (xMax - xMin) / pointCount;
+            for (let i = 0; i <= pointCount; i++) {
+                const x = xMin + i * step;
+                try {
+                    const y = fn.evaluate({x});
+                    points.push({x, y});
+                } catch (error) {
+                }
+            }
+            return points;
+        }
+        
+        function adjustZoom(factor) {
+            const xMin = parseFloat(xMinInput.value) || -10;
+            const xMax = parseFloat(xMaxInput.value) || 10;
+            const range = xMax - xMin;
+            const center = (xMin + xMax) / 2;
+            const newMin = center - (range * factor) / 2;
+            const newMax = center + (range * factor) / 2;
+            xMinInput.value = newMin;
+            xMaxInput.value = newMax;
+            updateChart();
+        }
+        
+        function findRoots() {
+            resultsDiv.innerHTML = '';
+            const xMin = parseFloat(xMinInput.value) || -10;
+            const xMax = parseFloat(xMaxInput.value) || 10;
+            functions.forEach((fn, index) => {
+                const roots = findFunctionRoots(fn.fn, xMin, xMax);
+                if (roots.length === 0) {
+                    resultsDiv.innerHTML += `<div>No roots found for y = ${fn.expression} in [${xMin}, ${xMax}]</div>`;
+                } else {
+                    resultsDiv.innerHTML += `<div>Roots for y = ${fn.expression}:</div>`;
+                    roots.forEach(root => {
+                        resultsDiv.innerHTML += `<div>• x = ${root.toFixed(4)}</div>`;
+                    });
+                    const rootPoints = roots.map(x => ({x, y: 0}));
+                    chart.data.datasets.push({
+                        label: `Roots of y = ${fn.expression}`,
+                        data: rootPoints,
+                        borderColor: fn.color,
+                        backgroundColor: fn.color,
+                        pointRadius: 6,
+                        pointStyle: 'crossRot',
+                        borderWidth: 1,
+                        showLine: false
+                    });
+                }
+            });
+            chart.update();
+        }
+        
+        function findFunctionRoots(fn, xMin, xMax, step = 0.01) {
+            const roots = [];
+            let lastY = fn.evaluate({x: xMin});
+            for (let x = xMin + step; x <= xMax; x += step) {
+                try {
+                    const y = fn.evaluate({x});
+                    if (lastY * y <= 0) {
+                        const root = refineRoot(fn, x - step, x);
+                        if (root !== null && !roots.some(r => Math.abs(r - root) < 0.001)) {
+                            roots.push(root);
+                        }
+                    }
+                    lastY = y;
+                } catch (error) {
+                }
+            }
+            return roots;
+        }
+        
+        function refineRoot(fn, a, b, tolerance = 1e-6) {
+            let low = a;
+            let high = b;
+            let mid;
+            for (let i = 0; i < 20; i++) {
+                mid = (low + high) / 2;
+                const y = fn.evaluate({x: mid});
+                if (Math.abs(y) < tolerance) {
+                    return mid;
+                }
+                const yLow = fn.evaluate({x: low});
+                if (y * yLow < 0) {
+                    high = mid;
+                } else {
+                    low = mid;
+                }
+            }
+            return mid;
+        }
+        
+        function findIntersections() {
+            resultsDiv.innerHTML = '';
+            const xMin = parseFloat(xMinInput.value) || -10;
+            const xMax = parseFloat(xMaxInput.value) || 10;
+            const intersections = [];
+            for (let i = 0; i < functions.length; i++) {
+                for (let j = i + 1; j < functions.length; j++) {
+                    const fn1 = functions[i].fn;
+                    const fn2 = functions[j].fn;
+                    const diffFn = math.compile(`${functions[i].expression} - (${functions[j].expression})`);
+                    const roots = findFunctionRoots(diffFn, xMin, xMax);
+                    roots.forEach(root => {
+                        try {
+                            const y = fn1.evaluate({x: root});
+                            intersections.push({
+                                x: root,
+                                y: y,
+                                fn1: i,
+                                fn2: j
+                            });
+                        } catch (error) {
+                        }
+                    });
+                }
+            }
+            if (intersections.length === 0) {
+                resultsDiv.innerHTML = '<div>No intersections found</div>';
+            } else {
+                resultsDiv.innerHTML = '<div>Intersections found:</div>';
+                intersections.forEach(point => {
+                    resultsDiv.innerHTML += `<div>• (${point.x.toFixed(4)}, ${point.y.toFixed(4)}) between y = ${functions[point.fn1].expression} and y = ${functions[point.fn2].expression}</div>`;
+                });
+                const intersectionPoints = intersections.map(p => ({x: p.x, y: p.y}));
+                chart.data.datasets.push({
+                    label: 'Intersections',
+                    data: intersectionPoints,
+                    borderColor: '#9b59b6',
+                    backgroundColor: '#9b59b6',
+                    pointRadius: 6,
+                    pointStyle: 'rect',
+                    borderWidth: 1,
+                    showLine: false
+                });
+            }
+            chart.update();
+        }
+        
+        function toggleTraceMode() {
+            traceMode = !traceMode;
+            traceModeBtn.classList.toggle('active', traceMode);
+            pointInfo.style.display = 'none';
+        }
+        
+        function handleMouseMove(event) {
+            if (!traceMode || !chart) return;
+            const rect = graphCanvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const xValue = chart.scales.x.getValueForPixel(x);
+            const yValue = chart.scales.y.getValueForPixel(y);
+            currentX = xValue;
+            let closestPoints = [];
+            functions.forEach((fn, index) => {
+                try {
+                    const y = fn.fn.evaluate({x: xValue});
+                    closestPoints.push({
+                        expression: fn.expression,
+                        color: fn.color,
+                        y: y
+                    });
+                } catch (error) {
+                }
+            });
+            if (closestPoints.length > 0) {
+                let html = `<strong>x = ${xValue.toFixed(4)}</strong><br>`;
+                closestPoints.forEach(point => {
+                    html += `<div style="color:${point.color}; margin-top:5px">
+                        y = ${point.expression}<br>
+                        y(${xValue.toFixed(4)}) = ${point.y.toFixed(4)}
+                    </div>`;
+                });
+                pointInfo.innerHTML = html;
+                pointInfo.style.display = 'block';
+                pointInfo.style.left = (x + 20) + 'px';
+                pointInfo.style.top = (y - 50) + 'px';
+            }
+        }
+        
+        function clearAll() {
+            functions.length = 0;
+            currentColorIndex = 0;
+            renderFunctionList();
+            resultsDiv.innerHTML = '';
+            if (chart) {
+                chart.data.datasets = [];
+                chart.update();
+            }
+        }
+        
+        function showError(message) {
+            resultsDiv.innerHTML = `<div style="color:var(--accent)">${message}</div>`;
+        }
+        
+        window.addEventListener('load', initCalculator);
+    </script>
+</body>
+</html>

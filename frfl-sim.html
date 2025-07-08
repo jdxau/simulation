@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Free-Fall Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            display: flex;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1000px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .simulation-section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .simulation-container {
+            position: relative;
+            height: 500px;
+            background: #0d1b2a;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #simulationCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .control-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .control-title {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #64b5f6;
+        }
+        
+        .slider-container {
+            margin: 10px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="number"] {
+            width: 70px;
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+            margin-left: 10px;
+        }
+        
+        .value-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            border-radius: 8px;
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #resetBtn {
+            background: #e74c3c;
+        }
+        
+        #resetBtn:hover {
+            background: #c0392b;
+        }
+        
+        #pauseBtn {
+            background: #f39c12;
+        }
+        
+        #pauseBtn:hover {
+            background: #d35400;
+        }
+        
+        .graphs-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .graph-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: 340px;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .data-display {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .data-display {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .data-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .data-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #64b5f6;
+        }
+        
+        .data-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .info-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-panel h3 {
+            margin-bottom: 15px;
+            color: #64b5f6;
+        }
+        
+        .info-panel ul {
+            padding-left: 20px;
+        }
+        
+        .info-panel li {
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0 10px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Physics Free-Fall Simulator</h1>
+            <p class="subtitle">Explore gravity, motion, and energy conservation with this interactive simulator. Adjust parameters to see how height, gravity, elasticity, and air resistance affect falling objects.</p>
+        </header>
+        
+        <div class="content">
+            <div class="simulation-section">
+                <h2 class="section-title">Simulation</h2>
+                <div class="simulation-container">
+                    <canvas id="simulationCanvas"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <h3 class="control-title">Environment</h3>
+                        <div class="slider-container">
+                            <label for="height">Initial Height: <span id="heightValue">100</span> m</label>
+                            <input type="range" id="height" min="50" max="500" value="100">
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="gravity">Gravity: <span id="gravityValue">9.8</span> m/s²</label>
+                            <input type="range" id="gravity" min="1" max="20" step="0.1" value="9.8">
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="elasticity">Elasticity: <span id="elasticityValue">0.7</span></label>
+                            <input type="range" id="elasticity" min="0.1" max="0.95" step="0.05" value="0.7">
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <h3 class="control-title">Object Properties</h3>
+                        <div class="slider-container">
+                            <label for="radius">Ball Radius: <span id="radiusValue">15</span> px</label>
+                            <input type="range" id="radius" min="5" max="40" value="15">
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="airResistance">Air Resistance: <span id="airResistanceValue">0.01</span></label>
+                            <input type="range" id="airResistance" min="0" max="0.05" step="0.005" value="0.01">
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="timeScale">Time Scale: <span id="timeScaleValue">1.0</span>x</label>
+                            <input type="range" id="timeScale" min="0.1" max="3" step="0.1" value="1.0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="buttons">
+                    <button id="startBtn">Start Simulation</button>
+                    <button id="pauseBtn">Pause</button>
+                    <button id="resetBtn">Reset</button>
+                </div>
+                
+                <div class="data-display">
+                    <div class="data-card">
+                        <div class="data-label">Current Height</div>
+                        <div id="currentHeight" class="data-value">100.0 m</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-label">Velocity</div>
+                        <div id="currentVelocity" class="data-value">0.0 m/s</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-label">Acceleration</div>
+                        <div id="currentAcceleration" class="data-value">0.0 m/s²</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-label">Time</div>
+                        <div id="currentTime" class="data-value">0.0 s</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="graphs-section">
+                <div class="graph-container">
+                    <h3 class="section-title">Height vs Time</h3>
+                    <canvas id="heightChart"></canvas>
+                </div>
+                
+                <div class="graph-container">
+                    <h3 class="section-title">Velocity vs Time</h3>
+                    <canvas id="velocityChart"></canvas>
+                </div>
+                
+                <div class="graph-container">
+                    <h3 class="section-title">Acceleration vs Time</h3>
+                    <canvas id="accelerationChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h3>Physics Concepts Illustrated</h3>
+            <ul>
+                <li><strong>Free Fall:</strong> Motion under the influence of gravity alone</li>
+                <li><strong>Kinematics:</strong> Equations describing motion without considering forces</li>
+                <li><strong>Energy Conservation:</strong> Conversion between potential and kinetic energy</li>
+                <li><strong>Elastic Collision:</strong> Bouncing behavior governed by coefficient of restitution</li>
+                <li><strong>Air Resistance:</strong> Drag force proportional to velocity</li>
+                <li><strong>Acceleration due to Gravity:</strong> Constant downward acceleration (g) experienced by all objects</li>
+            </ul>
+        </div>
+        
+        <footer>
+            <p>Free-Fall Physics Simulator | Created with HTML5 Canvas & Chart.js</p>
+        </footer>
+    </div>
+
+    <script>
+        let canvas, ctx;
+        let heightChart, velocityChart, accelerationChart;
+        let animationId;
+        let isRunning = false;
+        let simulationTime = 0;
+        
+        let params = {
+            height: 100,
+            gravity: 9.8,
+            elasticity: 0.7,
+            radius: 15,
+            airResistance: 0.01,
+            timeScale: 1.0
+        };
+        
+        let state = {
+            y: 100,
+            vy: 0,
+            ay: -9.8,
+            bouncing: false,
+            bounceCount: 0
+        };
+        
+        let dataHistory = {
+            time: [],
+            height: [],
+            velocity: [],
+            acceleration: []
+        };
+        
+        window.onload = function() {
+            canvas = document.getElementById('simulationCanvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            initCharts();
+            setupEventListeners();
+            draw();
+        };
+        
+        function initCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#aaa'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#aaa'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Value',
+                            color: '#aaa'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#aaa'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ddd'
+                        }
+                    }
+                }
+            };
+            heightChart = new Chart(document.getElementById('heightChart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Height (m)',
+                        data: [],
+                        borderColor: '#64b5f6',
+                        backgroundColor: 'rgba(100, 181, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: chartOptions
+            });
+            velocityChart = new Chart(document.getElementById('velocityChart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Velocity (m/s)',
+                        data: [],
+                        borderColor: '#4caf50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: chartOptions
+            });
+            accelerationChart = new Chart(document.getElementById('accelerationChart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Acceleration (m/s²)',
+                        data: [],
+                        borderColor: '#f44336',
+                        backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: chartOptions
+            });
+        }
+        
+        function setupEventListeners() {
+            document.getElementById('height').addEventListener('input', function() {
+                params.height = parseFloat(this.value);
+                document.getElementById('heightValue').textContent = params.height;
+                if (!isRunning) {
+                    state.y = params.height;
+                    draw();
+                }
+            });
+            document.getElementById('gravity').addEventListener('input', function() {
+                params.gravity = parseFloat(this.value);
+                document.getElementById('gravityValue').textContent = params.gravity;
+            });
+            document.getElementById('elasticity').addEventListener('input', function() {
+                params.elasticity = parseFloat(this.value);
+                document.getElementById('elasticityValue').textContent = params.elasticity;
+            });
+            document.getElementById('radius').addEventListener('input', function() {
+                params.radius = parseInt(this.value);
+                document.getElementById('radiusValue').textContent = params.radius;
+                if (!isRunning) draw();
+            });
+            document.getElementById('airResistance').addEventListener('input', function() {
+                params.airResistance = parseFloat(this.value);
+                document.getElementById('airResistanceValue').textContent = params.airResistance;
+            });
+            document.getElementById('timeScale').addEventListener('input', function() {
+                params.timeScale = parseFloat(this.value);
+                document.getElementById('timeScaleValue').textContent = params.timeScale;
+            });
+            document.getElementById('startBtn').addEventListener('click', startSimulation);
+            document.getElementById('pauseBtn').addEventListener('click', pauseSimulation);
+            document.getElementById('resetBtn').addEventListener('click', resetSimulation);
+            window.addEventListener('resize', function() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                draw();
+            });
+        }
+        
+        function startSimulation() {
+            if (!isRunning) {
+                isRunning = true;
+                simulationTime = 0;
+                state.bounceCount = 0;
+                dataHistory = {
+                    time: [],
+                    height: [],
+                    velocity: [],
+                    acceleration: []
+                };
+                simulate();
+            }
+        }
+        
+        function pauseSimulation() {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        }
+        
+        function resetSimulation() {
+            pauseSimulation();
+            state.y = params.height;
+            state.vy = 0;
+            state.ay = -params.gravity;
+            state.bouncing = false;
+            state.bounceCount = 0;
+            simulationTime = 0;
+            dataHistory = {
+                time: [],
+                height: [],
+                velocity: [],
+                acceleration: []
+            };
+            heightChart.data.labels = [];
+            heightChart.data.datasets[0].data = [];
+            heightChart.update();
+            velocityChart.data.labels = [];
+            velocityChart.data.datasets[0].data = [];
+            velocityChart.update();
+            accelerationChart.data.labels = [];
+            accelerationChart.data.datasets[0].data = [];
+            accelerationChart.update();
+            updateDataDisplays();
+            draw();
+        }
+        
+        function simulate() {
+            if (!isRunning) return;
+            const dt = 0.016 * params.timeScale;
+            state.ay = -params.gravity - Math.sign(state.vy) * params.airResistance * state.vy * state.vy;
+            state.vy += state.ay * dt;
+            state.y += state.vy * dt;
+            if (state.y <= 0) {
+                state.y = 0;
+                state.vy = -state.vy * params.elasticity;
+                state.bounceCount++;
+                if (Math.abs(state.vy) < 0.5) {
+                    state.vy = 0;
+                    isRunning = false;
+                }
+            }
+            simulationTime += dt;
+            if (dataHistory.time.length < 500) {
+                dataHistory.time.push(simulationTime);
+                dataHistory.height.push(state.y);
+                dataHistory.velocity.push(state.vy);
+                dataHistory.acceleration.push(state.ay);
+                updateCharts();
+            }
+            updateDataDisplays();
+            draw();
+            animationId = requestAnimationFrame(simulate);
+        }
+        
+        function updateCharts() {
+            heightChart.data.labels = dataHistory.time;
+            heightChart.data.datasets[0].data = dataHistory.height;
+            heightChart.update();
+            velocityChart.data.labels = dataHistory.time;
+            velocityChart.data.datasets[0].data = dataHistory.velocity;
+            velocityChart.update();
+            accelerationChart.data.labels = dataHistory.time;
+            accelerationChart.data.datasets[0].data = dataHistory.acceleration;
+            accelerationChart.update();
+        }
+        
+        function updateDataDisplays() {
+            document.getElementById('currentHeight').textContent = state.y.toFixed(1) + " m";
+            document.getElementById('currentVelocity').textContent = state.vy.toFixed(1) + " m/s";
+            document.getElementById('currentAcceleration').textContent = state.ay.toFixed(1) + " m/s²";
+            document.getElementById('currentTime').textContent = simulationTime.toFixed(1) + " s";
+        }
+        
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const groundHeight = 50;
+            const groundY = height - groundHeight;
+            ctx.clearRect(0, 0, width, height);
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, height);
+            skyGradient.addColorStop(0, "#1e3c72");
+            skyGradient.addColorStop(1, "#2a5298");
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = "#2e7d32";
+            ctx.fillRect(0, groundY, width, groundHeight);
+            ctx.fillStyle = "#1b5e20";
+            for (let i = 0; i < width; i += 40) {
+                ctx.fillRect(i, groundY, 20, 10);
+            }
+            const scale = (height - groundHeight) / params.height;
+            const ballY = groundY - state.y * scale;
+            const ballX = width / 2;
+            ctx.beginPath();
+            ctx.ellipse(ballX, groundY, params.radius * 1.5, params.radius * 0.5, 0, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+            ctx.fill();
+            const ballGradient = ctx.createRadialGradient(
+                ballX - params.radius/3, 
+                ballY - params.radius/3, 
+                1, 
+                ballX, 
+                ballY, 
+                params.radius
+            );
+            ballGradient.addColorStop(0, "#ff9800");
+            ballGradient.addColorStop(1, "#f57c00");
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, params.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ballGradient;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(ballX - params.radius/3, ballY - params.radius/3, params.radius/3, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(width * 0.8, groundY);
+            ctx.lineTo(width * 0.8, ballY);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = "white";
+            ctx.font = "14px Arial";
+            ctx.fillText(`Height: ${state.y.toFixed(1)} m`, width * 0.82, (groundY + ballY) / 2);
+            if (state.vy !== 0) {
+                const vectorLength = Math.min(Math.abs(state.vy) * 5, 100);
+                const direction = state.vy > 0 ? -1 : 1;
+                ctx.beginPath();
+                ctx.moveTo(ballX, ballY);
+                ctx.lineTo(ballX, ballY + vectorLength * direction);
+                ctx.strokeStyle = state.vy > 0 ? "#4caf50" : "#f44336";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.beginPath();
+                if (state.vy > 0) {
+                    ctx.moveTo(ballX - 5, ballY + vectorLength * direction + 10);
+                    ctx.lineTo(ballX, ballY + vectorLength * direction);
+                    ctx.lineTo(ballX + 5, ballY + vectorLength * direction + 10);
+                } else {
+                    ctx.moveTo(ballX - 5, ballY + vectorLength * direction - 10);
+                    ctx.lineTo(ballX, ballY + vectorLength * direction);
+                    ctx.lineTo(ballX + 5, ballY + vectorLength * direction - 10);
+                }
+                ctx.fillStyle = state.vy > 0 ? "#4caf50" : "#f44336";
+                ctx.fill();
+            }
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.font = "16px Arial";
+            ctx.fillText(`Bounces: ${state.bounceCount}`, 20, 30);
+            ctx.fillText(`Gravity: ${params.gravity.toFixed(1)} m/s²`, 20, 60);
+            ctx.fillText(`Elasticity: ${params.elasticity.toFixed(2)}`, 20, 90);
+            if (!isRunning && state.y === params.height) {
+                ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+                ctx.font = "20px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("Click START to begin simulation", width/2, 50);
+            }
+        }
+    </script>
+</body>
+</html>

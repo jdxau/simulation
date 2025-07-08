@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Projectile Motion Simulator</title>
+    <!-- Load Matter.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <!-- Load Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --accent-color: #ea4335;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --panel-color: #fff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .simulator-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        main {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .simulation-area {
+            flex: 1;
+            min-width: 500px;
+            position: relative;
+            height: 500px;
+            background-color: #e8f4f8;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        #physics-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background-color: #8b4513;
+        }
+
+        .launch-platform {
+            position: absolute;
+            bottom: 20px;
+            left: 50px;
+            width: 30px;
+            height: 60px;
+            background-color: #555;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .target {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            width: 30px;
+            height: 60px;
+            background-color: var(--accent-color);
+            transform: translateX(200px);
+            border-radius: 5px 5px 0 0;
+        }
+
+        .target::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 40px;
+            background-color: var(--accent-color);
+        }
+
+        .target::after {
+            content: 'Target';
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--accent-color);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .controls-panel {
+            width: 350px;
+            background-color: var(--panel-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h2 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .control {
+            margin-bottom: 15px;
+        }
+
+        .control label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .control input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .control input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.launch {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn.reset {
+            background-color: #666;
+            color: white;
+        }
+
+        .btn.trace {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .results {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 15px;
+        }
+
+        .results h2 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .data-label {
+            font-weight: 500;
+        }
+
+        .data-value {
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .hit-miss .data-value {
+            font-weight: bold;
+        }
+
+        .theory {
+            background-color: var(--panel-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .theory h2 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .theory p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+
+        .theory ul {
+            margin: 15px 0 15px 25px;
+        }
+
+        .theory li {
+            margin-bottom: 8px;
+        }
+
+        .formula {
+            background: #f0f7ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .graphs-section {
+            margin-top: 30px;
+            background: var(--panel-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+        }
+
+        .graphs-section h2 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 15px;
+        }
+
+        .simulation-controls-horizontal {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+            align-items: flex-end;
+            margin-top: 18px;
+            margin-bottom: 24px;
+            background: var(--panel-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 18px 10px 10px 10px;
+        }
+
+        .simulation-controls-horizontal .control {
+            margin-bottom: 0;
+            min-width: 140px;
+        }
+
+        .simulation-controls-horizontal .control label {
+            margin-bottom: 4px;
+            font-size: 0.93rem;
+        }
+
+        .simulation-controls-horizontal .control input[type="range"] {
+            width: 100%;
+        }
+
+        .simulation-actions-horizontal {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            justify-content: center;
+            align-items: flex-start;
+            margin-bottom: 32px;
+        }
+
+        .simulation-actions-horizontal .button-group {
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 0;
+            min-width: 180px;
+        }
+
+        .simulation-actions-horizontal .results {
+            min-width: 260px;
+            flex: 1 1 260px;
+            margin-left: 0;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                flex-direction: column;
+            }
+            
+            .controls-panel {
+                width: 100%;
+            }
+            .simulation-controls-horizontal {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .simulation-actions-horizontal {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 18px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .simulation-area {
+                height: 400px;
+                min-width: 100%;
+            }
+            .simulation-controls-horizontal {
+                padding: 10px 4px 4px 4px;
+            }
+            .simulation-actions-horizontal .results {
+                min-width: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="simulator-container">
+        <header>
+            <h1>Enhanced Projectile Motion Simulator</h1>
+            <p>Explore the physics of projectile motion with this interactive simulation</p>
+        </header>
+
+        <main>
+            <div style="flex:1;display:flex;flex-direction:column;">
+                <div class="simulation-area">
+                    <div id="physics-canvas" style="width:100%;height:100%;"></div>
+                    <div class="ground"></div>
+                    <div class="launch-platform"></div>
+                    <div class="target" id="target"></div>
+                </div>
+                <!-- Horizontal controls below the canvas -->
+                <div class="simulation-controls-horizontal">
+                    <div class="control">
+                        <label for="angle">Angle: <span id="angle-value">45</span>°</label>
+                        <input type="range" id="angle" min="0" max="90" value="45">
+                    </div>
+                    <div class="control">
+                        <label for="velocity">Velocity: <span id="velocity-value">10</span> m/s</label>
+                        <input type="range" id="velocity" min="1" max="30" value="10">
+                    </div>
+                    <div class="control">
+                        <label for="gravity">Gravity: <span id="gravity-value">9.8</span> m/s²</label>
+                        <input type="range" id="gravity" min="1" max="20" step="0.1" value="9.8">
+                    </div>
+                    <div class="control">
+                        <label for="mass">Mass: <span id="mass-value">1</span> kg</label>
+                        <input type="range" id="mass" min="0.1" max="10" step="0.1" value="1">
+                    </div>
+                    <div class="control">
+                        <label for="air-resistance">Air Resistance: <span id="air-resistance-value">0.1</span></label>
+                        <input type="range" id="air-resistance" min="0" max="1" step="0.01" value="0.1">
+                    </div>
+                    <div class="control">
+                        <label for="target-distance">Target: <span id="target-distance-value">10</span> m</label>
+                        <input type="range" id="target-distance" min="5" max="50" value="10">
+                    </div>
+                </div>
+                <!-- Horizontal actions and results below controls -->
+                <div class="simulation-actions-horizontal">
+                    <div class="button-group">
+                        <button id="launch-btn" class="btn launch">Launch Projectile</button>
+                        <button id="reset-btn" class="btn reset">Reset Simulation</button>
+                        <button id="trace-toggle" class="btn trace">Enable Trace</button>
+                    </div>
+                    <div class="results">
+                        <h2>Simulation Data</h2>
+                        <div class="data-row">
+                            <span class="data-label">Max Height:</span>
+                            <span class="data-value" id="max-height">0.00 m</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Distance:</span>
+                            <span class="data-value" id="distance">0.00 m</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Flight Time:</span>
+                            <span class="data-value" id="flight-time">0.00 s</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Impact Velocity:</span>
+                            <span class="data-value" id="impact-velocity">0.00 m/s</span>
+                        </div>
+                        <div class="data-row hit-miss">
+                            <span class="data-label">Result:</span>
+                            <span class="data-value" id="hit-miss">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="theory">
+            <h2>Projectile Motion Physics</h2>
+            <p>Projectile motion is a form of motion experienced by an object or particle that is projected near the Earth's surface and moves along a curved path under the action of gravity only.</p>
+            
+            <h3>Key Concepts</h3>
+            <ul>
+                <li><strong>Trajectory</strong>: The path followed by a projectile is called its trajectory, which is parabolic under ideal conditions (no air resistance).</li>
+                <li><strong>Independence of Motions</strong>: The horizontal and vertical motions are independent of each other.</li>
+                <li><strong>Horizontal Motion</strong>: Constant velocity (no acceleration in the horizontal direction).</li>
+                <li><strong>Vertical Motion</strong>: Constant downward acceleration due to gravity.</li>
+                <li><strong>Range</strong>: The horizontal distance traveled by a projectile.</li>
+                <li><strong>Time of Flight</strong>: The total time the projectile remains in the air.</li>
+            </ul>
+            
+            <h3>Equations of Motion</h3>
+            <div class="formula">
+                Horizontal position: x(t) = v₀ * cos(θ) * t
+            </div>
+            <div class="formula">
+                Vertical position: y(t) = v₀ * sin(θ) * t - (1/2) * g * t²
+            </div>
+            <div class="formula">
+                Range: R = (v₀² * sin(2θ)) / g
+            </div>
+            <div class="formula">
+                Max height: h = (v₀² * sin²(θ)) / (2g)
+            </div>
+            <div class="formula">
+                Time of flight: T = (2v₀ * sin(θ)) / g
+            </div>
+            
+            <p>Where:</p>
+            <ul>
+                <li>v₀ = initial velocity</li>
+                <li>θ = launch angle</li>
+                <li>g = acceleration due to gravity</li>
+                <li>t = time</li>
+            </ul>
+            
+            <h3>Factors Affecting Projectile Motion</h3>
+            <ul>
+                <li><strong>Initial Velocity</strong>: Higher velocity increases both range and height.</li>
+                <li><strong>Launch Angle</strong>: 45° provides maximum range in a vacuum. Angles above 45° give higher trajectory but shorter range.</li>
+                <li><strong>Gravity</strong>: Determines the downward acceleration. Higher gravity reduces flight time and range.</li>
+                <li><strong>Air Resistance</strong>: Slows the projectile, reduces range and height, and alters the trajectory.</li>
+                <li><strong>Projectile Mass</strong>: Affects how much air resistance influences motion.</li>
+            </ul>
+        </div>
+        
+        <div class="graphs-section">
+            <h2>Motion Analysis Graphs</h2>
+            <div class="charts-container">
+                <div class="chart-container">
+                    <canvas id="height-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="velocity-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="distance-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="acceleration-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { Engine, Render, Runner, Bodies, Composite, Body, Vector, World, Events } = Matter;
+
+        let engine;
+        let render;
+        let runner;
+        let projectile = null;
+        let isSimulating = false;
+        let traceEnabled = false;
+        let traceBodies = [];
+        let simulationStartTime = 0;
+        let maxHeight = 0;
+        let targetBody = null;
+        
+        let heightChart, velocityChart, distanceChart, accelerationChart;
+        
+        let simulationData = {
+            time: [],
+            height: [],
+            velocity: [],
+            distance: [],
+            accelerationY: []
+        };
+
+        let params = {
+            angle: 45,
+            velocity: 10,
+            gravity: 9.8,
+            mass: 1,
+            airResistance: 0.1,
+            targetDistance: 10
+        };
+
+        const scale = 40;
+
+        function initSimulation() {
+            engine = Engine.create({
+                gravity: { x: 0, y: 0.5 },
+                enableSleeping: true
+            });
+            const simArea = document.querySelector('.simulation-area');
+            render = Render.create({
+                element: document.getElementById('physics-canvas'),
+                engine: engine,
+                options: {
+                    width: simArea.clientWidth || 800,
+                    height: 500,
+                    wireframes: false,
+                    background: 'transparent'
+                }
+            });
+            Render.run(render);
+            runner = Runner.create();
+            Runner.run(runner, engine);
+            const ground = Bodies.rectangle(
+                render.options.width / 2,
+                render.options.height - 10,
+                render.options.width,
+                20,
+                { 
+                    isStatic: true,
+                    render: { fillStyle: '#8b4513' },
+                    collisionFilter: { group: -1 },
+                    label: 'ground'
+                }
+            );
+            const launchPlatform = Bodies.rectangle(
+                50 + 15,
+                render.options.height - 40,
+                30,
+                60,
+                { 
+                    isStatic: true,
+                    render: { fillStyle: '#555' },
+                    collisionFilter: { group: -1 },
+                    label: 'platform'
+                }
+            );
+            World.add(engine.world, [ground, launchPlatform]);
+            updateTargetPosition();
+            setupEventListeners();
+            initCharts();
+        }
+
+        function initCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (s)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true
+                        }
+                    }
+                }
+            };
+            heightChart = new Chart(document.getElementById('height-chart'), {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Height (m)',
+                        data: [],
+                        borderColor: '#4285f4',
+                        backgroundColor: 'rgba(66, 133, 244, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            ...chartOptions.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Height (m)'
+                            }
+                        }
+                    }
+                }
+            });
+            velocityChart = new Chart(document.getElementById('velocity-chart'), {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Velocity (m/s)',
+                        data: [],
+                        borderColor: '#34a853',
+                        backgroundColor: 'rgba(52, 168, 83, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            ...chartOptions.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Velocity (m/s)'
+                            }
+                        }
+                    }
+                }
+            });
+            distanceChart = new Chart(document.getElementById('distance-chart'), {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Distance (m)',
+                        data: [],
+                        borderColor: '#ea4335',
+                        backgroundColor: 'rgba(234, 67, 53, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            ...chartOptions.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Distance (m)'
+                            }
+                        }
+                    }
+                }
+            });
+            accelerationChart = new Chart(document.getElementById('acceleration-chart'), {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Vertical Acceleration (m/s²)',
+                        data: [],
+                        borderColor: '#fbbc05',
+                        backgroundColor: 'rgba(251, 188, 5, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            ...chartOptions.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Acceleration (m/s²)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTargetPosition() {
+            const targetElement = document.getElementById('target');
+            const targetX = 50 + (params.targetDistance * scale);
+            if (targetBody) {
+                World.remove(engine.world, targetBody);
+            }
+            targetBody = Bodies.rectangle(
+                targetX,
+                render.options.height - 40,
+                30,
+                60,
+                { 
+                    isStatic: true,
+                    isSensor: true,
+                    render: { fillStyle: '#ea4335', visible: false },
+                    label: 'target'
+                }
+            );
+            World.add(engine.world, targetBody);
+            targetElement.style.transform = `translateX(${targetX - 50 - 15}px)`;
+        }
+
+        function launchProjectile() {
+            if (isSimulating) return;
+            resetProjectile();
+            hitTarget = false;
+            updateParameters();
+            engine.gravity.y = params.gravity / 20;
+            const angleRad = params.angle * Math.PI / 180;
+            const velocityX = params.velocity * Math.cos(angleRad);
+            const velocityY = -params.velocity * Math.sin(angleRad);
+            projectile = Bodies.circle(
+                50 + 15,
+                render.options.height - 70,
+                8,
+                {
+                    mass: params.mass,
+                    restitution: 0.3,
+                    friction: 0.8,
+                    render: { fillStyle: '#4285f4' },
+                    collisionFilter: { group: -1 },
+                    label: 'projectile'
+                }
+            );
+            Body.setVelocity(projectile, { 
+                x: velocityX, 
+                y: velocityY 
+            });
+            projectile.frictionAir = params.airResistance;
+            World.add(engine.world, projectile);
+            isSimulating = true;
+            simulationStartTime = Date.now();
+            maxHeight = 0;
+            simulationData = {
+                time: [],
+                height: [],
+                velocity: [],
+                distance: [],
+                accelerationY: []
+            };
+            document.getElementById('hit-miss').textContent = '-';
+            document.getElementById('hit-miss').style.color = 'inherit';
+            Events.on(engine, 'beforeUpdate', trackSimulationData);
+            Events.on(engine, 'collisionStart', handleCollision);
+        }
+
+        function trackSimulationData() {
+            if (!projectile) return;
+            const currentTime = (Date.now() - simulationStartTime) / 1000;
+            const currentHeight = (render.options.height - projectile.position.y - 20) / scale;
+            const currentDistance = (projectile.position.x - 50) / scale;
+            const velocityMagnitude = Math.sqrt(
+                Math.pow(projectile.velocity.x, 2) + 
+                Math.pow(projectile.velocity.y, 2)
+            );
+            if (currentHeight > maxHeight) {
+                maxHeight = currentHeight;
+            }
+            simulationData.time.push(currentTime);
+            simulationData.height.push(currentHeight);
+            simulationData.velocity.push(velocityMagnitude);
+            simulationData.distance.push(currentDistance);
+            simulationData.accelerationY.push(projectile.force.y);
+            if (traceEnabled && Math.random() < 0.3) {
+                addTracePoint();
+            }
+            updateCharts();
+        }
+
+        function updateCharts() {
+            if (simulationData.time.length === 0) return;
+            heightChart.data.datasets[0].data = simulationData.time.map((t, i) => ({
+                x: t,
+                y: simulationData.height[i]
+            }));
+            heightChart.update();
+            velocityChart.data.datasets[0].data = simulationData.time.map((t, i) => ({
+                x: t,
+                y: simulationData.velocity[i]
+            }));
+            velocityChart.update();
+            distanceChart.data.datasets[0].data = simulationData.time.map((t, i) => ({
+                x: t,
+                y: simulationData.distance[i]
+            }));
+            distanceChart.update();
+            accelerationChart.data.datasets[0].data = simulationData.time.map((t, i) => ({
+                x: t,
+                y: simulationData.accelerationY[i]
+            }));
+            accelerationChart.update();
+        }
+
+        let hitTarget = false;
+        function handleCollision(event) {
+            const pairs = event.pairs;
+            for (let i = 0; i < pairs.length; i++) {
+                const pair = pairs[i];
+                const bodyA = pair.bodyA;
+                const bodyB = pair.bodyB;
+                if ((bodyA.label === 'projectile' && bodyB.label === 'target') ||
+                    (bodyA.label === 'target' && bodyB.label === 'projectile')) {
+                    hitTarget = true;
+                    endSimulation();
+                    return;
+                }
+                if ((bodyA.label === 'projectile' && bodyB.label === 'ground') ||
+                    (bodyA.label === 'ground' && bodyB.label === 'projectile')) {
+                    endSimulation();
+                    return;
+                }
+            }
+        }
+
+        function endSimulation() {
+            if (!isSimulating) return;
+            const flightTime = (Date.now() - simulationStartTime) / 1000;
+            const distance = (projectile.position.x - 50) / scale;
+            const velocityX = projectile.velocity.x;
+            const velocityY = projectile.velocity.y;
+            const impactVelocity = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+            document.getElementById('max-height').textContent = maxHeight.toFixed(2) + ' m';
+            document.getElementById('distance').textContent = distance.toFixed(2) + ' m';
+            document.getElementById('flight-time').textContent = flightTime.toFixed(2) + ' s';
+            document.getElementById('impact-velocity').textContent = impactVelocity.toFixed(2) + ' m/s';
+            if (hitTarget) {
+                document.getElementById('hit-miss').textContent = 'HIT!';
+                document.getElementById('hit-miss').style.color = '#34a853';
+            } else {
+                document.getElementById('hit-miss').textContent = 'MISS';
+                document.getElementById('hit-miss').style.color = '#ea4335';
+            }
+            Events.off(engine, 'beforeUpdate', trackSimulationData);
+            Events.off(engine, 'collisionStart', handleCollision);
+            isSimulating = false;
+            hitTarget = false;
+        }
+
+        function resetProjectile() {
+            if (projectile) {
+                World.remove(engine.world, projectile);
+                projectile = null;
+            }
+            clearTrace();
+            document.getElementById('hit-miss').textContent = '-';
+            document.getElementById('hit-miss').style.color = 'inherit';
+            if (!isSimulating) {
+                document.getElementById('max-height').textContent = '0.00 m';
+                document.getElementById('distance').textContent = '0.00 m';
+                document.getElementById('flight-time').textContent = '0.00 s';
+                document.getElementById('impact-velocity').textContent = '0.00 m/s';
+            }
+            Events.off(engine, 'beforeUpdate', trackSimulationData);
+            Events.off(engine, 'collisionStart', handleCollision);
+            isSimulating = false;
+            if (heightChart) {
+                heightChart.data.datasets[0].data = [];
+                heightChart.update();
+            }
+            if (velocityChart) {
+                velocityChart.data.datasets[0].data = [];
+                velocityChart.update();
+            }
+            if (distanceChart) {
+                distanceChart.data.datasets[0].data = [];
+                distanceChart.update();
+            }
+            if (accelerationChart) {
+                accelerationChart.data.datasets[0].data = [];
+                accelerationChart.update();
+            }
+        }
+
+        function addTracePoint() {
+            if (!projectile) return;
+            const tracePoint = Bodies.circle(
+                projectile.position.x,
+                projectile.position.y,
+                2,
+                {
+                    isStatic: true,
+                    isSensor: true,
+                    render: { fillStyle: 'rgba(66, 133, 244, 0.6)' },
+                    collisionFilter: { group: -1 }
+                }
+            );
+            World.add(engine.world, tracePoint);
+            traceBodies.push(tracePoint);
+        }
+
+        function clearTrace() {
+            traceBodies.forEach(body => {
+                World.remove(engine.world, body);
+            });
+            traceBodies = [];
+        }
+
+        function toggleTrace() {
+            traceEnabled = !traceEnabled;
+            const btn = document.getElementById('trace-toggle');
+            if (traceEnabled) {
+                btn.textContent = 'Disable Trace';
+                btn.classList.add('active-trace');
+            } else {
+                btn.textContent = 'Enable Trace';
+                btn.classList.remove('active-trace');
+                clearTrace();
+            }
+        }
+
+        function updateParameters() {
+            params.angle = parseInt(document.getElementById('angle').value);
+            params.velocity = parseInt(document.getElementById('velocity').value);
+            params.gravity = parseFloat(document.getElementById('gravity').value);
+            params.mass = parseFloat(document.getElementById('mass').value);
+            params.airResistance = parseFloat(document.getElementById('air-resistance').value);
+            params.targetDistance = parseInt(document.getElementById('target-distance').value);
+            document.getElementById('angle-value').textContent = params.angle;
+            document.getElementById('velocity-value').textContent = params.velocity;
+            document.getElementById('gravity-value').textContent = params.gravity;
+            document.getElementById('mass-value').textContent = params.mass;
+            document.getElementById('air-resistance-value').textContent = params.airResistance;
+            document.getElementById('target-distance-value').textContent = params.targetDistance;
+            updateTargetPosition();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('launch-btn').addEventListener('click', launchProjectile);
+            document.getElementById('reset-btn').addEventListener('click', resetProjectile);
+            document.getElementById('trace-toggle').addEventListener('click', toggleTrace);
+            const sliders = [
+                'angle', 'velocity', 'gravity', 'mass', 'air-resistance', 'target-distance'
+            ];
+            sliders.forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    const valueElement = document.getElementById(`${id}-value`);
+                    const value = this.id === 'angle' || this.id === 'velocity' || this.id === 'target-distance' 
+                        ? parseInt(this.value) 
+                        : parseFloat(this.value);
+                    valueElement.textContent = value;
+                    if (id === 'target-distance') {
+                        params.targetDistance = value;
+                        updateTargetPosition();
+                    }
+                });
+            });
+            window.addEventListener('resize', function() {
+                const simArea = document.querySelector('.simulation-area');
+                render.options.width = simArea.clientWidth || 800;
+                render.canvas.width = render.options.width;
+                Render.setPixelRatio(render, window.devicePixelRatio);
+                updateTargetPosition();
+            });
+        }
+
+        window.addEventListener('load', initSimulation);
+    </script>
+</body>
+</html>

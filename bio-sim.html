@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Genetics Cross Simulator</title>
+    <style>
+          body {
+
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+    
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #2c3e50;
+    text-align: center;
+}
+
+.parent-selection {
+    background: #f0f8ff;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.parents {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.parent {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+select {
+    padding: 8px;
+    margin: 5px 0;
+    width: 100%;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+}
+
+.dihybrid-only {
+    display: none;
+}
+
+.cross-type {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.cross-type button {
+    padding: 8px 15px;
+    margin: 0 5px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cross-type button.active {
+    background: #e74c3c;
+}
+
+.punnett-square {
+    background: #e8f4fc;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+#square-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.square-cell {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    font-family: monospace;
+}
+
+.results {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.genotype-results, .phenotype-results {
+    flex: 1;
+    background: #fff0f5;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.special-results {
+    background: #fffacd;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧬 Genetics Cross Simulator</h1>
+
+        <div class="parent-selection">
+            <h3>Select Parents' Genotypes:</h3>
+            <div class="parents">
+                <div class="parent">
+                    <h4>Parent 1</h4>
+                    <select id="parent1-trait1">
+                        <option value="AA">AA (Homozygous Dominant)</option>
+                        <option value="Aa">Aa (Heterozygous)</option>
+                        <option value="aa">aa (Homozygous Recessive)</option>
+                    </select>
+                    <select id="parent1-trait2" class="dihybrid-only">
+                        <option value="BB">BB</option>
+                        <option value="Bb">Bb</option>
+                        <option value="bb">bb</option>
+                    </select>
+                </div>
+                <div class="parent">
+                    <h4>Parent 2</h4>
+                    <select id="parent2-trait1">
+                        <option value="AA">AA (Homozygous Dominant)</option>
+                        <option value="Aa">Aa (Heterozygous)</option>
+                        <option value="aa">aa (Homozygous Recessive)</option>
+                    </select>
+                    <select id="parent2-trait2" class="dihybrid-only">
+                        <option value="BB">BB</option>
+                        <option value="Bb">Bb</option>
+                        <option value="bb">bb</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="cross-type">
+            <h3>Cross Type:</h3>
+            <button id="monohybrid-btn" class="active">Monohybrid</button>
+            <button id="dihybrid-btn">Dihybrid</button>
+            <button id="nonmendelian-btn">Non-Mendelian</button>
+        </div>
+        
+
+        <div class="punnett-square">
+            <h3>Punnett Square:</h3>
+            <div id="square-container"></div>
+        </div>
+
+        <div class="results">
+            <div class="genotype-results">
+                <h3>Genotype Ratios:</h3>
+                <div id="genotype-ratios"></div>
+            </div>
+            <div class="phenotype-results">
+                <h3>Phenotype Ratios:</h3>
+                <div id="phenotype-ratios"></div>
+            </div>
+        </div>
+        
+        <div class="special-results" id="special-results">
+            <h3>⚡ Special Inheritance Patterns:</h3>
+            <div id="special-info"></div>
+        </div>
+    </div>
+
+    <script>
+        const monohybridBtn = document.getElementById('monohybrid-btn');
+const dihybridBtn = document.getElementById('dihybrid-btn');
+const nonMendelianBtn = document.getElementById('nonmendelian-btn');
+const dihybridSelects = document.querySelectorAll('.dihybrid-only');
+const squareContainer = document.getElementById('square-container');
+const genotypeRatios = document.getElementById('genotype-ratios');
+const phenotypeRatios = document.getElementById('phenotype-ratios');
+const specialInfo = document.getElementById('special-info');
+
+let currentCrossType = 'monohybrid';
+
+monohybridBtn.addEventListener('click', () => {
+    currentCrossType = 'monohybrid';
+    updateActiveButton();
+    hideDihybridSelects();
+    calculateCross();
+});
+
+dihybridBtn.addEventListener('click', () => {
+    currentCrossType = 'dihybrid';
+    updateActiveButton();
+    showDihybridSelects();
+    calculateCross();
+});
+
+nonMendelianBtn.addEventListener('click', () => {
+    currentCrossType = 'nonmendelian';
+    updateActiveButton();
+    hideDihybridSelects();
+    calculateCross();
+});
+
+
+document.querySelectorAll('select').forEach(select => {
+    select.addEventListener('change', calculateCross);
+});
+
+
+function updateActiveButton() {
+    monohybridBtn.classList.remove('active');
+    dihybridBtn.classList.remove('active');
+    nonMendelianBtn.classList.remove('active');
+    
+    if (currentCrossType === 'monohybrid') monohybridBtn.classList.add('active');
+    if (currentCrossType === 'dihybrid') dihybridBtn.classList.add('active');
+    if (currentCrossType === 'nonmendelian') nonMendelianBtn.classList.add('active');
+}
+
+function showDihybridSelects() {
+    dihybridSelects.forEach(select => {
+        select.style.display = 'block';
+    });
+}
+
+function hideDihybridSelects() {
+    dihybridSelects.forEach(select => {
+        select.style.display = 'none';
+    });
+}
+
+
+
+        function calculateCross() {
+            const parent1Trait1 = document.getElementById('parent1-trait1').value;
+            const parent2Trait1 = document.getElementById('parent2-trait1').value;
+            
+            if (currentCrossType === 'monohybrid') {
+                const p1Alleles = parent1Trait1.split('');
+        const p2Alleles = parent2Trait1.split('');
+        
+
+        squareContainer.innerHTML = '';
+        squareContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        
+        
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'square-cell';
+        squareContainer.appendChild(emptyCell);
+        
+        p2Alleles.forEach(allele => {
+            const cell = document.createElement('div');
+            cell.className = 'square-cell';
+            cell.textContent = allele;
+            squareContainer.appendChild(cell);
+        });
+        
+        
+        p1Alleles.forEach(allele1 => {
+            const rowHeader = document.createElement('div');
+            rowHeader.className = 'square-cell';
+            rowHeader.textContent = allele1;
+            squareContainer.appendChild(rowHeader);
+            
+            p2Alleles.forEach(allele2 => {
+                const cell = document.createElement('div');
+                cell.className = 'square-cell';
+                
+                
+                const genotype = [allele1, allele2].sort().join('');
+                cell.textContent = genotype;
+                
+                
+                if (allele1 === allele2) {
+                    cell.style.backgroundColor = '#e6ffe6'; 
+                } else {
+                    cell.style.backgroundColor = '#ffe6e6'; 
+                }
+                
+                squareContainer.appendChild(cell);
+            });
+        });
+        
+        /* Render Punnett square as a table */
+        const table = document.createElement('table');
+        table.style.borderCollapse = 'collapse';
+        table.style.margin = '0 auto';
+        const headerRow = document.createElement('tr');
+        headerRow.appendChild(document.createElement('th')); // Empty top-left cell
+        p2Alleles.forEach(allele => {
+            const th = document.createElement('th');
+            th.textContent = allele;
+            th.style.border = '1px solid #ccc';
+            th.style.padding = '8px';
+            th.style.background = '#f0f8ff';
+            headerRow.appendChild(th);
+        });
+        p1Alleles.forEach(allele1 => {
+            const row = document.createElement('tr');
+            const th = document.createElement('th');
+            th.textContent = allele1;
+            th.style.border = '1px solid #ccc';
+            th.style.padding = '8px';
+            th.style.background = '#f0f8ff';
+            row.appendChild(th);
+            p2Alleles.forEach(allele2 => {
+                const td = document.createElement('td');
+                const genotype = [allele1, allele2].sort().join('');
+                td.textContent = genotype;
+                td.style.border = '1px solid #ccc';
+                td.style.padding = '8px';
+                td.style.textAlign = 'center';
+                td.style.fontFamily = 'monospace';
+                td.style.backgroundColor = (allele1 === allele2) ? '#e6ffe6' : '#ffe6e6';
+                row.appendChild(td);
+            });
+            table.appendChild(row);
+        });
+        squareContainer.innerHTML = '';
+        squareContainer.appendChild(table);
+        // Calculate genotype counts
+        const genotypeCounts = { 'AA': 0, 'Aa': 0, 'aA': 0, 'aa': 0 };
+        const phenotypeCounts = { 'Dominant': 0, 'Recessive': 0 };
+        const total = p1Alleles.length * p2Alleles.length;
+        for (let i = 0; i < p1Alleles.length; i++) {
+            for (let j = 0; j < p2Alleles.length; j++) {
+                const alleles = [p1Alleles[i], p2Alleles[j]].sort();
+                const genotype = alleles.join('');
+                if (genotype === 'AA') genotypeCounts['AA']++;
+                else if (genotype === 'aa') genotypeCounts['aa']++;
+                else if (genotype === 'Aa') genotypeCounts['Aa']++;
+                else if (genotype === 'aA') genotypeCounts['aA']++;
+                // Phenotype: Dominant if at least one 'A'
+                if (alleles.includes('A')) phenotypeCounts['Dominant']++;
+                else phenotypeCounts['Recessive']++;
+            }
+        }
+        // Combine Aa and aA for display
+        const AaCount = genotypeCounts['Aa'] + genotypeCounts['aA'];
+        genotypeRatios.innerHTML = `
+            <p>AA: ${Math.round((genotypeCounts['AA'] / total) * 100)}%</p>
+            <p>Aa: ${Math.round((AaCount / total) * 100)}%</p>
+            <p>aa: ${Math.round((genotypeCounts['aa'] / total) * 100)}%</p>
+        `;
+        phenotypeRatios.innerHTML = `
+            <p>Dominant: ${Math.round((phenotypeCounts['Dominant'] / total) * 100)}%</p>
+            <p>Recessive: ${Math.round((phenotypeCounts['Recessive'] / total) * 100)}%</p>
+        `;
+        specialInfo.innerHTML = '';
+            } else if (currentCrossType === 'dihybrid') {
+                const parent1Trait2 = document.getElementById('parent1-trait2').value;
+                const parent2Trait2 = document.getElementById('parent2-trait2').value;
+                
+                // Get gametes for each parent
+                const gametes1 = getGametes(parent1Trait1, parent1Trait2);
+                const gametes2 = getGametes(parent2Trait1, parent2Trait2);
+                
+                // Create Punnett square
+                squareContainer.innerHTML = '';
+                const table = document.createElement('table');
+                table.style.borderCollapse = 'collapse';
+                table.style.width = '100%';
+                table.style.margin = '0 auto';
+                
+                // Create header row
+                const headerRow = document.createElement('tr');
+                headerRow.appendChild(createHeaderCell(''));
+                for (const gamete of gametes2) {
+                    headerRow.appendChild(createHeaderCell(gamete));
+                }
+                table.appendChild(headerRow);
+                
+                // Create data rows
+                const genotypeCounts = {};
+                const phenotypeCounts = {
+                    'Dominant for both': 0,
+                    'Dominant trait1, Recessive trait2': 0,
+                    'Recessive trait1, Dominant trait2': 0,
+                    'Recessive for both': 0
+                };
+                
+                for (let i = 0; i < gametes1.length; i++) {
+                    const row = document.createElement('tr');
+                    row.appendChild(createHeaderCell(gametes1[i]));
+                    
+                    for (let j = 0; j < gametes2.length; j++) {
+                        const offspring = combineGametes(gametes1[i], gametes2[j]);
+                        const cell = createTableCell(offspring);
+                        
+                        // Update genotype counts
+                        genotypeCounts[offspring] = (genotypeCounts[offspring] || 0) + 1;
+                        
+                        // Update phenotype counts
+                        const phenotype = getPhenotype(offspring);
+                        phenotypeCounts[phenotype]++;
+                        
+                        // Color code based on phenotype
+                        if (phenotype === 'Dominant for both') cell.style.backgroundColor = '#ccffcc';
+                        else if (phenotype === 'Dominant trait1, Recessive trait2') cell.style.backgroundColor = '#ccffff';
+                        else if (phenotype === 'Recessive trait1, Dominant trait2') cell.style.backgroundColor = '#ffffcc';
+                        else cell.style.backgroundColor = '#ffcccc';
+                        
+                        row.appendChild(cell);
+                    }
+                    table.appendChild(row);
+                }
+                
+                squareContainer.appendChild(table);
+                
+                // Display genotype ratios
+                genotypeRatios.innerHTML = '';
+                for (const [genotype, count] of Object.entries(genotypeCounts)) {
+                    const p = document.createElement('p');
+                    p.textContent = `${genotype}: ${Math.round((count / 16) * 100)}%`;
+                    genotypeRatios.appendChild(p);
+                }
+                
+                // Display phenotype ratios
+                phenotypeRatios.innerHTML = '';
+                for (const [phenotype, count] of Object.entries(phenotypeCounts)) {
+                    const p = document.createElement('p');
+                    p.textContent = `${phenotype}: ${Math.round((count / 16) * 100)}%`;
+                    phenotypeRatios.appendChild(p);
+                }
+                
+                specialInfo.innerHTML = '';
+                
+            } else if (currentCrossType === 'nonmendelian') {
+                const parent1Trait1 = document.getElementById('parent1-trait1').value;
+                const parent2Trait1 = document.getElementById('parent2-trait1').value;
+                
+                // Get alleles
+                const p1Alleles = parent1Trait1.split('');
+                const p2Alleles = parent2Trait1.split('');
+                
+                // Create Punnett square
+                squareContainer.innerHTML = '';
+                const table = document.createElement('table');
+                table.style.borderCollapse = 'collapse';
+                table.style.margin = '0 auto';
+                
+                // Create header row
+                const headerRow = document.createElement('tr');
+                headerRow.appendChild(createHeaderCell(''));
+                p2Alleles.forEach(allele => {
+                    headerRow.appendChild(createHeaderCell(allele));
+                });
+                table.appendChild(headerRow);
+                
+                // Create data rows
+                const genotypeCounts = { 'AA': 0, 'Aa': 0, 'aa': 0 };
+                const phenotypeCounts = { 'Red': 0, 'Pink': 0, 'White': 0 };
+                
+                for (let i = 0; i < p1Alleles.length; i++) {
+                    const row = document.createElement('tr');
+                    row.appendChild(createHeaderCell(p1Alleles[i]));
+                    
+                    for (let j = 0; j < p2Alleles.length; j++) {
+                        const alleles = [p1Alleles[i], p2Alleles[j]].sort();
+                        const genotype = alleles.join('');
+                        
+                        const cell = createTableCell(genotype);
+                        
+                        // Color code based on incomplete dominance
+                        if (genotype === 'AA') {
+                            cell.style.backgroundColor = '#ffcccc'; // Red
+                        } else if (genotype === 'aa') {
+                            cell.style.backgroundColor = '#f0f0f0'; // White
+                        } else {
+                            cell.style.backgroundColor = '#ffccff'; // Pink
+                        }
+                        
+                        // Update counts
+                        genotypeCounts[genotype]++;
+                        if (genotype === 'AA') phenotypeCounts['Red']++;
+                        else if (genotype === 'aa') phenotypeCounts['White']++;
+                        else phenotypeCounts['Pink']++;
+                        
+                        row.appendChild(cell);
+                    }
+                    table.appendChild(row);
+                }
+                
+                squareContainer.appendChild(table);
+                
+                // Display genotype ratios
+                const total = 4;
+                genotypeRatios.innerHTML = `
+                    <p>AA: ${Math.round((genotypeCounts['AA'] / total) * 100)}%</p>
+                    <p>Aa: ${Math.round((genotypeCounts['Aa'] / total) * 100)}%</p>
+                    <p>aa: ${Math.round((genotypeCounts['aa'] / total) * 100)}%</p>
+                `;
+                
+                // Display phenotype ratios
+                phenotypeRatios.innerHTML = `
+                    <p>Red: ${Math.round((phenotypeCounts['Red'] / total) * 100)}%</p>
+                    <p>Pink: ${Math.round((phenotypeCounts['Pink'] / total) * 100)}%</p>
+                    <p>White: ${Math.round((phenotypeCounts['White'] / total) * 100)}%</p>
+                `;
+                
+                specialInfo.innerHTML = `
+                    <p>⚡ Incomplete Dominance: Blended phenotypes (Red + White = Pink)</p>
+                    <p>🌈 Codominance: Both traits visible (e.g., red and white spots)</p>
+                    <p>🔢 Polygenic Inheritance: Multiple genes influence one trait</p>
+                `;
+            }
+        }
+        
+        // Helper functions for dihybrid cross
+        function getGametes(trait1, trait2) {
+            const alleles1 = trait1.split('');
+            const alleles2 = trait2.split('');
+            const gametes = [];
+            
+            for (let i = 0; i < alleles1.length; i++) {
+                for (let j = 0; j < alleles2.length; j++) {
+                    gametes.push(alleles1[i] + alleles2[j]);
+                }
+            }
+            
+            return gametes;
+        }
+        
+        function combineGametes(gamete1, gamete2) {
+            const trait1 = [gamete1[0], gamete2[0]].sort().join('');
+            const trait2 = [gamete1[1], gamete2[1]].sort().join('');
+            return trait1 + trait2;
+        }
+        
+        function getPhenotype(genotype) {
+            const trait1 = genotype.substring(0, 2);
+            const trait2 = genotype.substring(2, 4);
+            
+            const pheno1 = trait1.includes('A') ? 'Dominant' : 'Recessive';
+            const pheno2 = trait2.includes('B') ? 'Dominant' : 'Recessive';
+            
+            if (pheno1 === 'Dominant' && pheno2 === 'Dominant') return 'Dominant for both';
+            if (pheno1 === 'Dominant' && pheno2 === 'Recessive') return 'Dominant trait1, Recessive trait2';
+            if (pheno1 === 'Recessive' && pheno2 === 'Dominant') return 'Recessive trait1, Dominant trait2';
+            return 'Recessive for both';
+        }
+        
+        // Helper functions for table creation
+        function createHeaderCell(text) {
+            const th = document.createElement('th');
+            th.textContent = text;
+            th.style.border = '1px solid #ccc';
+            th.style.padding = '8px';
+            th.style.background = '#f0f8ff';
+            return th;
+        }
+        
+        function createTableCell(text) {
+            const td = document.createElement('td');
+            td.textContent = text;
+            td.style.border = '1px solid #ccc';
+            td.style.padding = '8px';
+            td.style.textAlign = 'center';
+            td.style.fontFamily = 'monospace';
+            return td;
+        }
+        
+        // Initialize
+        updateActiveButton();
+        hideDihybridSelects();
+        calculateCross();
+    </script>
+</body>
+</html>

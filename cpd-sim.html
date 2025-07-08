@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Element Reaction Simulator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .selection-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(30, 30, 50, 0.7);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: #4facfe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .elements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .element {
+            background: rgba(50, 70, 100, 0.8);
+            border-radius: 10px;
+            padding: 15px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .element:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            border-color: #4facfe;
+        }
+        
+        .element.selected {
+            border-color: #00f2fe;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .element .symbol {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .element .name {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        
+        .element .number {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+        
+        .selection-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 25px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+        
+        .selected-element {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .element-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(50, 70, 100, 0.8);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            font-size: 2.5rem;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .element-large .name {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .element-large .number {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .reaction-arrow {
+            font-size: 3rem;
+            opacity: 0.7;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .simulation-panel {
+            flex: 2;
+            min-width: 500px;
+            background: rgba(30, 30, 50, 0.7);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .reaction-display {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .equation {
+            font-size: 2.2rem;
+            margin: 15px 0;
+            font-family: 'Cambria', serif;
+            font-weight: bold;
+            color: #aaffaa;
+        }
+        
+        .energy-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        
+        .energy-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff9966;
+        }
+        
+        .energy-label {
+            font-size: 1.2rem;
+        }
+        
+        .exothermic {
+            color: #ff6666;
+        }
+        
+        .endothermic {
+            color: #66aaff;
+        }
+        
+        .visualization {
+            flex: 1;
+            background: rgba(0, 5, 15, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .atom {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            transition: all 1.5s ease;
+        }
+        
+        .bond {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            height: 4px;
+            transform-origin: 0 0;
+            transition: all 1.5s ease;
+        }
+        
+        .reaction-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .info-title {
+            color: #4facfe;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            color: #aaa;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .periodic-key {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .key-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .key-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .selection-display {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .reaction-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-atom"></i> Element Reaction Simulator</h1>
+            <p>Select any two elements from the periodic table to simulate chemical reactions. Observe balanced equations, energy changes, and molecular interactions.</p>
+        </header>
+        
+        <div class="content">
+            <div class="selection-panel">
+                <h2 class="panel-title"><i class="fas fa-sliders-h"></i> Element Selection</h2>
+                
+                <div class="periodic-key">
+                    <div class="key-item">
+                        <div class="key-color" style="background-color: #ff9999;"></div>
+                        <span>Alkali Metals</span>
+                    </div>
+                    <div class="key-item">
+                        <div class="key-color" style="background-color: #ffcc99;"></div>
+                        <span>Alkaline Earth</span>
+                    </div>
+                    <div class="key-item">
+                        <div class="key-color" style="background-color: #99ff99;"></div>
+                        <span>Transition Metals</span>
+                    </div>
+                    <div class="key-item">
+                        <div class="key-color" style="background-color: #99ccff;"></div>
+                        <span>Other Metals</span>
+                    </div>
+                    <div class="key-item">
+                        <div class="key-color" style="background-color: #ccccff;"></div>
+                        <span>Nonmetals</span>
+                    </div>
+                </div>
+                
+                <div class="elements-grid" id="elements-grid">
+                    <!-- Elements will be populated by JavaScript -->
+                </div>
+                
+                <div class="selection-display">
+                    <div class="selected-element">
+                        <h3>Element 1</h3>
+                        <div class="element-large" id="selected-element-1">
+                            <div class="number">?</div>
+                            <div class="symbol">?</div>
+                            <div class="name">Select Element</div>
+                        </div>
+                    </div>
+                    
+                    <div class="reaction-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    
+                    <div class="selected-element">
+                        <h3>Element 2</h3>
+                        <div class="element-large" id="selected-element-2">
+                            <div class="number">?</div>
+                            <div class="symbol">?</div>
+                            <div class="name">Select Element</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button id="simulate-btn" disabled>
+                        <i class="fas fa-play"></i> Simulate Reaction
+                    </button>
+                    <button id="reset-btn">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+            </div>
+            
+            <div class="simulation-panel">
+                <h2 class="panel-title"><i class="fas fa-vial"></i> Reaction Simulation</h2>
+                
+                <div class="reaction-display">
+                    <div class="equation" id="equation">Select two elements to see possible reactions</div>
+                    <div class="energy-display" id="energy-display">
+                        <span class="energy-label">Energy Change:</span>
+                        <span class="energy-value" id="energy-value">0 kJ/mol</span>
+                        <span id="energy-type"></span>
+                    </div>
+                </div>
+                
+                <div class="visualization" id="visualization">
+                    <div id="reaction-visual">
+                        <p>Reaction visualization will appear here</p>
+                    </div>
+                </div>
+                
+                <div class="reaction-info">
+                    <div class="info-title">
+                        <i class="fas fa-info-circle"></i> Reaction Information
+                    </div>
+                    <div id="reaction-info-text">
+                        Select two elements and click "Simulate Reaction" to see information about the chemical reaction, including products and energy changes.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Element Reaction Simulator | Educational Tool for Understanding Chemical Reactions | Top 30 Periodic Elements</p>
+        </footer>
+    </div>
+
+    <script>
+        // Periodic table data (top 30 elements)
+        const elements = [
+            { number: 1, symbol: "H", name: "Hydrogen", group: "nonmetal", color: "#ccccff", radius: 40 },
+            { number: 2, symbol: "He", name: "Helium", group: "noble", color: "#ccffff", radius: 35 },
+            { number: 3, symbol: "Li", name: "Lithium", group: "alkali", color: "#ff9999", radius: 60 },
+            { number: 4, symbol: "Be", name: "Beryllium", group: "alkaline", color: "#ffcc99", radius: 45 },
+            { number: 5, symbol: "B", name: "Boron", group: "metalloid", color: "#ccffcc", radius: 40 },
+            { number: 6, symbol: "C", name: "Carbon", group: "nonmetal", color: "#ccccff", radius: 40 },
+            { number: 7, symbol: "N", name: "Nitrogen", group: "nonmetal", color: "#ccccff", radius: 40 },
+            { number: 8, symbol: "O", name: "Oxygen", group: "nonmetal", color: "#ccccff", radius: 40 },
+            { number: 9, symbol: "F", name: "Fluorine", group: "halogen", color: "#ccffcc", radius: 35 },
+            { number: 10, symbol: "Ne", name: "Neon", group: "noble", color: "#ccffff", radius: 35 },
+            { number: 11, symbol: "Na", name: "Sodium", group: "alkali", color: "#ff9999", radius: 65 },
+            { number: 12, symbol: "Mg", name: "Magnesium", group: "alkaline", color: "#ffcc99", radius: 50 },
+            { number: 13, symbol: "Al", name: "Aluminum", group: "metal", color: "#99ccff", radius: 45 },
+            { number: 14, symbol: "Si", name: "Silicon", group: "metalloid", color: "#ccffcc", radius: 40 },
+            { number: 15, symbol: "P", name: "Phosphorus", group: "nonmetal", color: "#ccccff", radius: 40 },
+            { number: 16, symbol: "S", name: "Sulfur", group: "nonmetal", color: "#ccccff", radius: 45 },
+            { number: 17, symbol: "Cl", name: "Chlorine", group: "halogen", color: "#ccffcc", radius: 35 },
+            { number: 18, symbol: "Ar", name: "Argon", group: "noble", color: "#ccffff", radius: 35 },
+            { number: 19, symbol: "K", name: "Potassium", group: "alkali", color: "#ff9999", radius: 70 },
+            { number: 20, symbol: "Ca", name: "Calcium", group: "alkaline", color: "#ffcc99", radius: 55 },
+            { number: 21, symbol: "Sc", name: "Scandium", group: "transition", color: "#99ff99", radius: 50 },
+            { number: 22, symbol: "Ti", name: "Titanium", group: "transition", color: "#99ff99", radius: 50 },
+            { number: 23, symbol: "V", name: "Vanadium", group: "transition", color: "#99ff99", radius: 45 },
+            { number: 24, symbol: "Cr", name: "Chromium", group: "transition", color: "#99ff99", radius: 45 },
+            { number: 25, symbol: "Mn", name: "Manganese", group: "transition", color: "#99ff99", radius: 45 },
+            { number: 26, symbol: "Fe", name: "Iron", group: "transition", color: "#99ff99", radius: 45 },
+            { number: 27, symbol: "Co", name: "Cobalt", group: "transition", color: "#99ff99", radius: 45 },
+            { number: 28, symbol: "Ni", name: "Nickel", group: "transition", color: "#99ff99", radius: 45 },
+            { number: 29, symbol: "Cu", name: "Copper", group: "transition", color: "#99ff99", radius: 45 },
+            { number: 30, symbol: "Zn", name: "Zinc", group: "transition", color: "#99ff99", radius: 45 }
+        ];
+        
+        // Reaction database
+        const reactions = {
+            "H-O": {
+                equation: "2H₂ + O₂ → 2H₂O",
+                energy: -483.6,
+                type: "exothermic",
+                info: "Hydrogen and oxygen react to form water. This is a highly exothermic reaction that releases significant energy. Water is essential for all known forms of life.",
+                visualization: {
+                    reactants: [
+                        { symbol: "H", x: 100, y: 150, connections: [1] },
+                        { symbol: "H", x: 150, y: 150, connections: [0] },
+                        { symbol: "O", x: 300, y: 150, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "O", x: 200, y: 150, connections: [1, 2] },
+                        { symbol: "H", x: 170, y: 120, connections: [0] },
+                        { symbol: "H", x: 170, y: 180, connections: [0] }
+                    ]
+                }
+            },
+            "Na-Cl": {
+                equation: "2Na + Cl₂ → 2NaCl",
+                energy: -411.2,
+                type: "exothermic",
+                info: "Sodium metal reacts with chlorine gas to form sodium chloride (table salt). This ionic compound forms a crystal lattice structure.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Na", x: 100, y: 150, connections: [] },
+                        { symbol: "Na", x: 150, y: 150, connections: [] },
+                        { symbol: "Cl", x: 300, y: 150, connections: [3] },
+                        { symbol: "Cl", x: 350, y: 150, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "Na", x: 170, y: 140, connections: [1] },
+                        { symbol: "Cl", x: 200, y: 160, connections: [0] },
+                        { symbol: "Na", x: 230, y: 140, connections: [3] },
+                        { symbol: "Cl", x: 260, y: 160, connections: [2] }
+                    ]
+                }
+            },
+            "C-O": {
+                equation: "C + O₂ → CO₂",
+                energy: -393.5,
+                type: "exothermic",
+                info: "Carbon reacts with oxygen to form carbon dioxide. This combustion reaction releases energy and is fundamental to respiration and fossil fuel burning.",
+                visualization: {
+                    reactants: [
+                        { symbol: "C", x: 150, y: 150, connections: [] },
+                        { symbol: "O", x: 300, y: 150, connections: [2] },
+                        { symbol: "O", x: 350, y: 150, connections: [1] }
+                    ],
+                    products: [
+                        { symbol: "C", x: 200, y: 150, connections: [1, 2] },
+                        { symbol: "O", x: 230, y: 130, connections: [0] },
+                        { symbol: "O", x: 230, y: 170, connections: [0] }
+                    ]
+                }
+            },
+            "Fe-O": {
+                equation: "4Fe + 3O₂ → 2Fe₂O₃",
+                energy: -824.2,
+                type: "exothermic",
+                info: "Iron reacts with oxygen to form iron oxide (rust). This corrosion process occurs slowly in the presence of water and oxygen.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Fe", x: 100, y: 150, connections: [] },
+                        { symbol: "Fe", x: 150, y: 150, connections: [] },
+                        { symbol: "Fe", x: 200, y: 150, connections: [] },
+                        { symbol: "Fe", x: 250, y: 150, connections: [] },
+                        { symbol: "O", x: 350, y: 120, connections: [5] },
+                        { symbol: "O", x: 400, y: 120, connections: [4] },
+                        { symbol: "O", x: 350, y: 180, connections: [7] },
+                        { symbol: "O", x: 400, y: 180, connections: [6] }
+                    ],
+                    products: [
+                        { symbol: "Fe", x: 150, y: 140, connections: [5, 6] },
+                        { symbol: "Fe", x: 200, y: 140, connections: [5, 6] },
+                        { symbol: "Fe", x: 150, y: 180, connections: [7, 8] },
+                        { symbol: "Fe", x: 200, y: 180, connections: [7, 8] },
+                        { symbol: "O", x: 130, y: 120, connections: [0, 1] },
+                        { symbol: "O", x: 180, y: 120, connections: [0, 1] },
+                        { symbol: "O", x: 130, y: 160, connections: [0, 1] },
+                        { symbol: "O", x: 180, y: 160, connections: [2, 3] },
+                        { symbol: "O", x: 230, y: 160, connections: [2, 3] }
+                    ]
+                }
+            },
+            "H-Cl": {
+                equation: "H₂ + Cl₂ → 2HCl",
+                energy: -184.6,
+                type: "exothermic",
+                info: "Hydrogen and chlorine react to form hydrogen chloride gas. When dissolved in water, it forms hydrochloric acid.",
+                visualization: {
+                    reactants: [
+                        { symbol: "H", x: 100, y: 150, connections: [1] },
+                        { symbol: "H", x: 150, y: 150, connections: [0] },
+                        { symbol: "Cl", x: 300, y: 150, connections: [3] },
+                        { symbol: "Cl", x: 350, y: 150, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "H", x: 180, y: 140, connections: [1] },
+                        { symbol: "Cl", x: 220, y: 160, connections: [0] },
+                        { symbol: "H", x: 280, y: 140, connections: [3] },
+                        { symbol: "Cl", x: 320, y: 160, connections: [2] }
+                    ]
+                }
+            },
+            "Mg-O": {
+                equation: "2Mg + O₂ → 2MgO",
+                energy: -1203,
+                type: "exothermic",
+                info: "Magnesium burns in oxygen with a bright white flame to form magnesium oxide. This reaction is highly exothermic and is used in fireworks and flares.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Mg", x: 120, y: 150, connections: [] },
+                        { symbol: "Mg", x: 170, y: 150, connections: [] },
+                        { symbol: "O", x: 300, y: 140, connections: [3] },
+                        { symbol: "O", x: 350, y: 160, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "Mg", x: 180, y: 140, connections: [2] },
+                        { symbol: "O", x: 210, y: 160, connections: [0] },
+                        { symbol: "Mg", x: 260, y: 140, connections: [3] },
+                        { symbol: "O", x: 290, y: 160, connections: [2] }
+                    ]
+                }
+            },
+            "Ca-Cl": {
+                equation: "Ca + Cl₂ → CaCl₂",
+                energy: -795,
+                type: "exothermic",
+                info: "Calcium reacts vigorously with chlorine to form calcium chloride, a salt used for de-icing and as a drying agent.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Ca", x: 140, y: 150, connections: [] },
+                        { symbol: "Cl", x: 300, y: 140, connections: [2] },
+                        { symbol: "Cl", x: 350, y: 160, connections: [1] }
+                    ],
+                    products: [
+                        { symbol: "Ca", x: 200, y: 150, connections: [1, 2] },
+                        { symbol: "Cl", x: 230, y: 130, connections: [0] },
+                        { symbol: "Cl", x: 230, y: 170, connections: [0] }
+                    ]
+                }
+            },
+            "Fe-Cl": {
+                equation: "2Fe + 3Cl₂ → 2FeCl₃",
+                energy: -400,
+                type: "exothermic",
+                info: "Iron reacts with chlorine gas to form iron(III) chloride, a compound used in water treatment and as a catalyst.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Fe", x: 120, y: 150, connections: [] },
+                        { symbol: "Fe", x: 170, y: 150, connections: [] },
+                        { symbol: "Cl", x: 300, y: 120, connections: [4] },
+                        { symbol: "Cl", x: 350, y: 120, connections: [2] },
+                        { symbol: "Cl", x: 300, y: 180, connections: [5] },
+                        { symbol: "Cl", x: 350, y: 180, connections: [4] }
+                    ],
+                    products: [
+                        { symbol: "Fe", x: 180, y: 140, connections: [2, 3, 4] },
+                        { symbol: "Fe", x: 230, y: 140, connections: [5, 6, 7] },
+                        { symbol: "Cl", x: 160, y: 120, connections: [0] },
+                        { symbol: "Cl", x: 200, y: 120, connections: [0] },
+                        { symbol: "Cl", x: 180, y: 170, connections: [0] },
+                        { symbol: "Cl", x: 210, y: 120, connections: [1] },
+                        { symbol: "Cl", x: 250, y: 120, connections: [1] },
+                        { symbol: "Cl", x: 230, y: 170, connections: [1] }
+                    ]
+                }
+            },
+            "Al-O": {
+                equation: "4Al + 3O₂ → 2Al₂O₃",
+                energy: -1675.7,
+                type: "exothermic",
+                info: "Aluminum reacts with oxygen to form aluminum oxide, a protective layer that prevents further corrosion.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Al", x: 100, y: 150, connections: [] },
+                        { symbol: "Al", x: 140, y: 150, connections: [] },
+                        { symbol: "Al", x: 180, y: 150, connections: [] },
+                        { symbol: "Al", x: 220, y: 150, connections: [] },
+                        { symbol: "O", x: 300, y: 120, connections: [5] },
+                        { symbol: "O", x: 340, y: 120, connections: [4] },
+                        { symbol: "O", x: 320, y: 180, connections: [7] },
+                        { symbol: "O", x: 360, y: 180, connections: [6] }
+                    ],
+                    products: [
+                        { symbol: "Al", x: 160, y: 140, connections: [4, 5, 6] },
+                        { symbol: "Al", x: 200, y: 140, connections: [4, 5, 6] },
+                        { symbol: "Al", x: 160, y: 180, connections: [7, 8, 9] },
+                        { symbol: "Al", x: 200, y: 180, connections: [7, 8, 9] },
+                        { symbol: "O", x: 140, y: 120, connections: [0, 1] },
+                        { symbol: "O", x: 180, y: 120, connections: [0, 1] },
+                        { symbol: "O", x: 220, y: 120, connections: [0, 1] },
+                        { symbol: "O", x: 140, y: 200, connections: [2, 3] },
+                        { symbol: "O", x: 180, y: 200, connections: [2, 3] },
+                        { symbol: "O", x: 220, y: 200, connections: [2, 3] }
+                    ]
+                }
+            },
+            "Zn-S": {
+                equation: "Zn + S → ZnS",
+                energy: -206,
+                type: "exothermic",
+                info: "Zinc reacts with sulfur to form zinc sulfide, a compound used in phosphorescent materials and pigments.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Zn", x: 150, y: 150, connections: [] },
+                        { symbol: "S", x: 300, y: 150, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "Zn", x: 200, y: 150, connections: [1] },
+                        { symbol: "S", x: 230, y: 150, connections: [0] }
+                    ]
+                }
+            },
+            "Cu-O": {
+                equation: "2Cu + O₂ → 2CuO",
+                energy: -310.6,
+                type: "exothermic",
+                info: "Copper reacts with oxygen to form copper(II) oxide, a black solid. This reaction is responsible for the tarnishing of copper surfaces.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Cu", x: 120, y: 150, connections: [] },
+                        { symbol: "Cu", x: 170, y: 150, connections: [] },
+                        { symbol: "O", x: 300, y: 140, connections: [3] },
+                        { symbol: "O", x: 350, y: 160, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "Cu", x: 180, y: 140, connections: [2] },
+                        { symbol: "O", x: 210, y: 160, connections: [0] },
+                        { symbol: "Cu", x: 260, y: 140, connections: [3] },
+                        { symbol: "O", x: 290, y: 160, connections: [2] }
+                    ]
+                }
+            },
+            "Na-O": {
+                equation: "4Na + O₂ → 2Na₂O",
+                energy: -414,
+                type: "exothermic",
+                info: "Sodium reacts rapidly with oxygen to form sodium oxide, a white solid. This reaction is highly exothermic and occurs readily in air.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Na", x: 100, y: 150, connections: [] },
+                        { symbol: "Na", x: 140, y: 150, connections: [] },
+                        { symbol: "Na", x: 180, y: 150, connections: [] },
+                        { symbol: "Na", x: 220, y: 150, connections: [] },
+                        { symbol: "O", x: 300, y: 140, connections: [5] },
+                        { symbol: "O", x: 340, y: 160, connections: [4] }
+                    ],
+                    products: [
+                        { symbol: "Na", x: 160, y: 140, connections: [4] },
+                        { symbol: "Na", x: 200, y: 140, connections: [4] },
+                        { symbol: "O", x: 180, y: 160, connections: [0, 1] },
+                        { symbol: "Na", x: 240, y: 140, connections: [5] },
+                        { symbol: "Na", x: 280, y: 140, connections: [5] },
+                        { symbol: "O", x: 260, y: 160, connections: [3, 4] }
+                    ]
+                }
+            },
+            "K-Cl": {
+                equation: "2K + Cl₂ → 2KCl",
+                energy: -437,
+                type: "exothermic",
+                info: "Potassium reacts explosively with chlorine to form potassium chloride, a common salt used in fertilizers.",
+                visualization: {
+                    reactants: [
+                        { symbol: "K", x: 120, y: 150, connections: [] },
+                        { symbol: "K", x: 170, y: 150, connections: [] },
+                        { symbol: "Cl", x: 300, y: 140, connections: [3] },
+                        { symbol: "Cl", x: 350, y: 160, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "K", x: 180, y: 140, connections: [2] },
+                        { symbol: "Cl", x: 210, y: 160, connections: [0] },
+                        { symbol: "K", x: 260, y: 140, connections: [3] },
+                        { symbol: "Cl", x: 290, y: 160, connections: [2] }
+                    ]
+                }
+            },
+            "Mg-Cl": {
+                equation: "Mg + Cl₂ → MgCl₂",
+                energy: -641.8,
+                type: "exothermic",
+                info: "Magnesium reacts with chlorine to form magnesium chloride, a salt used in de-icing and as a source of magnesium metal.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Mg", x: 150, y: 150, connections: [] },
+                        { symbol: "Cl", x: 300, y: 140, connections: [2] },
+                        { symbol: "Cl", x: 350, y: 160, connections: [1] }
+                    ],
+                    products: [
+                        { symbol: "Mg", x: 200, y: 150, connections: [1, 2] },
+                        { symbol: "Cl", x: 230, y: 130, connections: [0] },
+                        { symbol: "Cl", x: 230, y: 170, connections: [0] }
+                    ]
+                }
+            },
+            "Ca-O": {
+                equation: "2Ca + O₂ → 2CaO",
+                energy: -1269.8,
+                type: "exothermic",
+                info: "Calcium reacts with oxygen to form calcium oxide (quicklime), an important industrial chemical.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Ca", x: 120, y: 150, connections: [] },
+                        { symbol: "Ca", x: 170, y: 150, connections: [] },
+                        { symbol: "O", x: 300, y: 140, connections: [3] },
+                        { symbol: "O", x: 350, y: 160, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "Ca", x: 180, y: 140, connections: [2] },
+                        { symbol: "O", x: 210, y: 160, connections: [0] },
+                        { symbol: "Ca", x: 260, y: 140, connections: [3] },
+                        { symbol: "O", x: 290, y: 160, connections: [2] }
+                    ]
+                }
+            },
+            "H-F": {
+                equation: "H₂ + F₂ → 2HF",
+                energy: -542,
+                type: "exothermic",
+                info: "Hydrogen reacts explosively with fluorine to form hydrogen fluoride, a highly corrosive and toxic compound.",
+                visualization: {
+                    reactants: [
+                        { symbol: "H", x: 100, y: 150, connections: [1] },
+                        { symbol: "H", x: 150, y: 150, connections: [0] },
+                        { symbol: "F", x: 300, y: 150, connections: [3] },
+                        { symbol: "F", x: 350, y: 150, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "H", x: 180, y: 140, connections: [1] },
+                        { symbol: "F", x: 220, y: 160, connections: [0] },
+                        { symbol: "H", x: 280, y: 140, connections: [3] },
+                        { symbol: "F", x: 320, y: 160, connections: [2] }
+                    ]
+                }
+            },
+            "C-H": {
+                equation: "CH₄ formation: C + 2H₂ → CH₄",
+                energy: -74.8,
+                type: "exothermic",
+                info: "Carbon reacts with hydrogen to form methane, the simplest hydrocarbon and a major component of natural gas.",
+                visualization: {
+                    reactants: [
+                        { symbol: "C", x: 150, y: 150, connections: [] },
+                        { symbol: "H", x: 300, y: 120, connections: [] },
+                        { symbol: "H", x: 300, y: 180, connections: [] },
+                        { symbol: "H", x: 350, y: 140, connections: [] },
+                        { symbol: "H", x: 350, y: 160, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "C", x: 200, y: 150, connections: [1, 2, 3, 4] },
+                        { symbol: "H", x: 230, y: 120, connections: [0] },
+                        { symbol: "H", x: 230, y: 180, connections: [0] },
+                        { symbol: "H", x: 270, y: 130, connections: [0] },
+                        { symbol: "H", x: 270, y: 170, connections: [0] }
+                    ]
+                }
+            },
+            "N-H": {
+                equation: "N₂ + 3H₂ → 2NH₃",
+                energy: -92.4,
+                type: "exothermic",
+                info: "Nitrogen reacts with hydrogen under high pressure and temperature (Haber process) to form ammonia, a key fertilizer.",
+                visualization: {
+                    reactants: [
+                        { symbol: "N", x: 100, y: 150, connections: [1] },
+                        { symbol: "N", x: 150, y: 150, connections: [0] },
+                        { symbol: "H", x: 300, y: 120, connections: [] },
+                        { symbol: "H", x: 300, y: 180, connections: [] },
+                        { symbol: "H", x: 350, y: 150, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "N", x: 200, y: 150, connections: [1, 2, 3] },
+                        { symbol: "H", x: 230, y: 120, connections: [0] },
+                        { symbol: "H", x: 230, y: 180, connections: [0] },
+                        { symbol: "H", x: 270, y: 150, connections: [0] }
+                    ]
+                }
+            },
+            "Fe-S": {
+                equation: "Fe + S → FeS",
+                energy: -100,
+                type: "exothermic",
+                info: "Iron reacts with sulfur to form iron(II) sulfide, a black solid used in laboratory demonstrations.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Fe", x: 150, y: 150, connections: [] },
+                        { symbol: "S", x: 300, y: 150, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "Fe", x: 200, y: 150, connections: [1] },
+                        { symbol: "S", x: 230, y: 150, connections: [0] }
+                    ]
+                }
+            },
+            "Cu-S": {
+                equation: "Cu + S → CuS",
+                energy: -53,
+                type: "exothermic",
+                info: "Copper reacts with sulfur to form copper(II) sulfide, a black solid found in nature as covellite.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Cu", x: 150, y: 150, connections: [] },
+                        { symbol: "S", x: 300, y: 150, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "Cu", x: 200, y: 150, connections: [1] },
+                        { symbol: "S", x: 230, y: 150, connections: [0] }
+                    ]
+                }
+            },
+            "Al-Cl": {
+                equation: "2Al + 3Cl₂ → 2AlCl₃",
+                energy: -704,
+                type: "exothermic",
+                info: "Aluminum reacts with chlorine to form aluminum chloride, used in chemical synthesis and as a catalyst.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Al", x: 120, y: 150, connections: [] },
+                        { symbol: "Al", x: 170, y: 150, connections: [] },
+                        { symbol: "Cl", x: 300, y: 120, connections: [4] },
+                        { symbol: "Cl", x: 350, y: 120, connections: [2] },
+                        { symbol: "Cl", x: 300, y: 180, connections: [5] },
+                        { symbol: "Cl", x: 350, y: 180, connections: [4] }
+                    ],
+                    products: [
+                        { symbol: "Al", x: 180, y: 140, connections: [2, 3, 4] },
+                        { symbol: "Al", x: 230, y: 140, connections: [5, 6, 7] },
+                        { symbol: "Cl", x: 160, y: 120, connections: [0] },
+                        { symbol: "Cl", x: 200, y: 120, connections: [0] },
+                        { symbol: "Cl", x: 180, y: 170, connections: [0] },
+                        { symbol: "Cl", x: 210, y: 120, connections: [1] },
+                        { symbol: "Cl", x: 250, y: 120, connections: [1] },
+                        { symbol: "Cl", x: 230, y: 170, connections: [1] }
+                    ]
+                }
+            },
+            "Mg-S": {
+                equation: "Mg + S → MgS",
+                energy: -350,
+                type: "exothermic",
+                info: "Magnesium reacts with sulfur to form magnesium sulfide, used in organic synthesis and as a phosphor.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Mg", x: 150, y: 150, connections: [] },
+                        { symbol: "S", x: 300, y: 150, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "Mg", x: 200, y: 150, connections: [1] },
+                        { symbol: "S", x: 230, y: 150, connections: [0] }
+                    ]
+                }
+            },
+            "Ca-S": {
+                equation: "Ca + S → CaS",
+                energy: -545,
+                type: "exothermic",
+                info: "Calcium reacts with sulfur to form calcium sulfide, used in phosphorescent materials.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Ca", x: 150, y: 150, connections: [] },
+                        { symbol: "S", x: 300, y: 150, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "Ca", x: 200, y: 150, connections: [1] },
+                        { symbol: "S", x: 230, y: 150, connections: [0] }
+                    ]
+                }
+            },
+            "K-O": {
+                equation: "4K + O₂ → 2K₂O",
+                energy: -362,
+                type: "exothermic",
+                info: "Potassium reacts with oxygen to form potassium oxide, a strong base used in chemistry.",
+                visualization: {
+                    reactants: [
+                        { symbol: "K", x: 100, y: 150, connections: [] },
+                        { symbol: "K", x: 140, y: 150, connections: [] },
+                        { symbol: "K", x: 180, y: 150, connections: [] },
+                        { symbol: "K", x: 220, y: 150, connections: [] },
+                        { symbol: "O", x: 300, y: 140, connections: [5] },
+                        { symbol: "O", x: 340, y: 160, connections: [4] }
+                    ],
+                    products: [
+                        { symbol: "K", x: 160, y: 140, connections: [4] },
+                        { symbol: "K", x: 200, y: 140, connections: [4] },
+                        { symbol: "O", x: 180, y: 160, connections: [0, 1] },
+                        { symbol: "K", x: 240, y: 140, connections: [5] },
+                        { symbol: "K", x: 280, y: 140, connections: [5] },
+                        { symbol: "O", x: 260, y: 160, connections: [3, 4] }
+                    ]
+                }
+            },
+            // Additional reactions for elements 1-30 not already included above
+
+            // Lithium + Oxygen
+            "Li-O": {
+                equation: "4Li + O₂ → 2Li₂O",
+                energy: -597,
+                type: "exothermic",
+                info: "Lithium reacts with oxygen to form lithium oxide, a white solid. This reaction is highly exothermic and occurs readily in air.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Li", x: 100, y: 150, connections: [] },
+                        { symbol: "Li", x: 140, y: 150, connections: [] },
+                        { symbol: "Li", x: 180, y: 150, connections: [] },
+                        { symbol: "Li", x: 220, y: 150, connections: [] },
+                        { symbol: "O", x: 300, y: 140, connections: [5] },
+                        { symbol: "O", x: 340, y: 160, connections: [4] }
+                    ],
+                    products: [
+                        { symbol: "Li", x: 160, y: 140, connections: [4] },
+                        { symbol: "Li", x: 200, y: 140, connections: [4] },
+                        { symbol: "O", x: 180, y: 160, connections: [0, 1] },
+                        { symbol: "Li", x: 240, y: 140, connections: [5] },
+                        { symbol: "Li", x: 280, y: 140, connections: [5] },
+                        { symbol: "O", x: 260, y: 160, connections: [3, 4] }
+                    ]
+                }
+            },
+
+            // Lithium + Chlorine
+            "Li-Cl": {
+                equation: "2Li + Cl₂ → 2LiCl",
+                energy: -408,
+                type: "exothermic",
+                info: "Lithium reacts with chlorine to form lithium chloride, a white crystalline salt.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Li", x: 120, y: 150, connections: [] },
+                        { symbol: "Li", x: 170, y: 150, connections: [] },
+                        { symbol: "Cl", x: 300, y: 140, connections: [3] },
+                        { symbol: "Cl", x: 350, y: 160, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "Li", x: 180, y: 140, connections: [2] },
+                        { symbol: "Cl", x: 210, y: 160, connections: [0] },
+                        { symbol: "Li", x: 260, y: 140, connections: [3] },
+                        { symbol: "Cl", x: 290, y: 160, connections: [2] }
+                    ]
+                }
+            },
+
+            // Potassium + Oxygen (already included as K-O, but also forms K₂O₂)
+            "K-O2": {
+                equation: "2K + O₂ → K₂O₂",
+                energy: -496,
+                type: "exothermic",
+                info: "Potassium can react with excess oxygen to form potassium peroxide (K₂O₂), a yellow solid.",
+                visualization: {
+                    reactants: [
+                        { symbol: "K", x: 120, y: 150, connections: [] },
+                        { symbol: "K", x: 170, y: 150, connections: [] },
+                        { symbol: "O", x: 300, y: 140, connections: [3] },
+                        { symbol: "O", x: 350, y: 160, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "K", x: 180, y: 140, connections: [2] },
+                        { symbol: "K", x: 210, y: 160, connections: [3] },
+                        { symbol: "O", x: 240, y: 140, connections: [0] },
+                        { symbol: "O", x: 270, y: 160, connections: [1] }
+                    ]
+                }
+            },
+
+            // Sodium + Sulfur
+            "Na-S": {
+                equation: "2Na + S → Na₂S",
+                energy: -364,
+                type: "exothermic",
+                info: "Sodium reacts with sulfur to form sodium sulfide, a yellow solid used in the paper industry.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Na", x: 120, y: 150, connections: [] },
+                        { symbol: "Na", x: 170, y: 150, connections: [] },
+                        { symbol: "S", x: 300, y: 150, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "Na", x: 180, y: 140, connections: [2] },
+                        { symbol: "Na", x: 220, y: 140, connections: [2] },
+                        { symbol: "S", x: 200, y: 170, connections: [0, 1] }
+                    ]
+                }
+            },
+
+            // Potassium + Chlorine
+            "K-Cl": {
+                equation: "2K + Cl₂ → 2KCl",
+                energy: -437,
+                type: "exothermic",
+                info: "Potassium reacts explosively with chlorine to form potassium chloride, a common salt used in fertilizers.",
+                visualization: {
+                    reactants: [
+                        { symbol: "K", x: 120, y: 150, connections: [] },
+                        { symbol: "K", x: 170, y: 150, connections: [] },
+                        { symbol: "Cl", x: 300, y: 140, connections: [3] },
+                        { symbol: "Cl", x: 350, y: 160, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "K", x: 180, y: 140, connections: [2] },
+                        { symbol: "Cl", x: 210, y: 160, connections: [0] },
+                        { symbol: "K", x: 260, y: 140, connections: [3] },
+                        { symbol: "Cl", x: 290, y: 160, connections: [2] }
+                    ]
+                }
+            },
+
+            // Calcium + Fluorine
+            "Ca-F": {
+                equation: "Ca + F₂ → CaF₂",
+                energy: -1219,
+                type: "exothermic",
+                info: "Calcium reacts with fluorine to form calcium fluoride, used in the production of hydrofluoric acid.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Ca", x: 150, y: 150, connections: [] },
+                        { symbol: "F", x: 300, y: 140, connections: [2] },
+                        { symbol: "F", x: 350, y: 160, connections: [1] }
+                    ],
+                    products: [
+                        { symbol: "Ca", x: 200, y: 150, connections: [1, 2] },
+                        { symbol: "F", x: 230, y: 130, connections: [0] },
+                        { symbol: "F", x: 230, y: 170, connections: [0] }
+                    ]
+                }
+            },
+
+            // Magnesium + Fluorine
+            "Mg-F": {
+                equation: "Mg + F₂ → MgF₂",
+                energy: -1124,
+                type: "exothermic",
+                info: "Magnesium reacts with fluorine to form magnesium fluoride, used in optics and ceramics.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Mg", x: 150, y: 150, connections: [] },
+                        { symbol: "F", x: 300, y: 140, connections: [2] },
+                        { symbol: "F", x: 350, y: 160, connections: [1] }
+                    ],
+                    products: [
+                        { symbol: "Mg", x: 200, y: 150, connections: [1, 2] },
+                        { symbol: "F", x: 230, y: 130, connections: [0] },
+                        { symbol: "F", x: 230, y: 170, connections: [0] }
+                    ]
+                }
+            },
+
+            // Aluminum + Chlorine (already included as Al-Cl)
+            // Aluminum + Sulfur
+            "Al-S": {
+                equation: "2Al + 3S → Al₂S₃",
+                energy: -705,
+                type: "exothermic",
+                info: "Aluminum reacts with sulfur to form aluminum sulfide, which hydrolyzes in water to produce hydrogen sulfide gas.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Al", x: 120, y: 150, connections: [] },
+                        { symbol: "Al", x: 170, y: 150, connections: [] },
+                        { symbol: "S", x: 300, y: 120, connections: [4] },
+                        { symbol: "S", x: 350, y: 120, connections: [2] },
+                        { symbol: "S", x: 300, y: 180, connections: [5] },
+                        { symbol: "S", x: 350, y: 180, connections: [4] }
+                    ],
+                    products: [
+                        { symbol: "Al", x: 180, y: 140, connections: [2, 3, 4] },
+                        { symbol: "Al", x: 230, y: 140, connections: [5, 6, 7] },
+                        { symbol: "S", x: 160, y: 120, connections: [0] },
+                        { symbol: "S", x: 200, y: 120, connections: [0] },
+                        { symbol: "S", x: 180, y: 170, connections: [0] },
+                        { symbol: "S", x: 210, y: 120, connections: [1] },
+                        { symbol: "S", x: 250, y: 120, connections: [1] },
+                        { symbol: "S", x: 230, y: 170, connections: [1] }
+                    ]
+                }
+            },
+
+            // Zinc + Oxygen
+            "Zn-O": {
+                equation: "2Zn + O₂ → 2ZnO",
+                energy: -348,
+                type: "exothermic",
+                info: "Zinc reacts with oxygen to form zinc oxide, a white powder used in sunscreens and paints.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Zn", x: 120, y: 150, connections: [] },
+                        { symbol: "Zn", x: 170, y: 150, connections: [] },
+                        { symbol: "O", x: 300, y: 140, connections: [3] },
+                        { symbol: "O", x: 350, y: 160, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "Zn", x: 180, y: 140, connections: [2] },
+                        { symbol: "O", x: 210, y: 160, connections: [0] },
+                        { symbol: "Zn", x: 260, y: 140, connections: [3] },
+                        { symbol: "O", x: 290, y: 160, connections: [2] }
+                    ]
+                }
+            },
+
+            // Copper + Chlorine
+            "Cu-Cl": {
+                equation: "Cu + Cl₂ → CuCl₂",
+                energy: -220,
+                type: "exothermic",
+                info: "Copper reacts with chlorine to form copper(II) chloride, a green solid used as a catalyst and in pigments.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Cu", x: 150, y: 150, connections: [] },
+                        { symbol: "Cl", x: 300, y: 140, connections: [2] },
+                        { symbol: "Cl", x: 350, y: 160, connections: [1] }
+                    ],
+                    products: [
+                        { symbol: "Cu", x: 200, y: 150, connections: [1, 2] },
+                        { symbol: "Cl", x: 230, y: 130, connections: [0] },
+                        { symbol: "Cl", x: 230, y: 170, connections: [0] }
+                    ]
+                }
+            },
+
+            // Iron + Fluorine
+            "Fe-F": {
+                equation: "Fe + F₂ → FeF₂",
+                energy: -824,
+                type: "exothermic",
+                info: "Iron reacts with fluorine to form iron(II) fluoride, a white solid used in ceramics.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Fe", x: 150, y: 150, connections: [] },
+                        { symbol: "F", x: 300, y: 140, connections: [2] },
+                        { symbol: "F", x: 350, y: 160, connections: [1] }
+                    ],
+                    products: [
+                        { symbol: "Fe", x: 200, y: 150, connections: [1, 2] },
+                        { symbol: "F", x: 230, y: 130, connections: [0] },
+                        { symbol: "F", x: 230, y: 170, connections: [0] }
+                    ]
+                }
+            },
+
+            // Iron + Sulfur (already included as Fe-S)
+            // Copper + Oxygen (already included as Cu-O)
+            // Zinc + Sulfur (already included as Zn-S)
+            // Magnesium + Sulfur (already included as Mg-S)
+            // Calcium + Sulfur (already included as Ca-S)
+            // Potassium + Sulfur
+            "K-S": {
+                equation: "2K + S → K₂S",
+                energy: -370,
+                type: "exothermic",
+                info: "Potassium reacts with sulfur to form potassium sulfide, a yellow solid.",
+                visualization: {
+                    reactants: [
+                        { symbol: "K", x: 120, y: 150, connections: [] },
+                        { symbol: "K", x: 170, y: 150, connections: [] },
+                        { symbol: "S", x: 300, y: 150, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "K", x: 180, y: 140, connections: [2] },
+                        { symbol: "K", x: 220, y: 140, connections: [2] },
+                        { symbol: "S", x: 200, y: 170, connections: [0, 1] }
+                    ]
+                }
+            },
+
+            // Sodium + Fluorine
+            "Na-F": {
+                equation: "2Na + F₂ → 2NaF",
+                energy: -569,
+                type: "exothermic",
+                info: "Sodium reacts vigorously with fluorine to form sodium fluoride, used in toothpaste and water fluoridation.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Na", x: 120, y: 150, connections: [] },
+                        { symbol: "Na", x: 170, y: 150, connections: [] },
+                        { symbol: "F", x: 300, y: 140, connections: [3] },
+                        { symbol: "F", x: 350, y: 160, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "Na", x: 180, y: 140, connections: [2] },
+                        { symbol: "F", x: 210, y: 160, connections: [0] },
+                        { symbol: "Na", x: 260, y: 140, connections: [3] },
+                        { symbol: "F", x: 290, y: 160, connections: [2] }
+                    ]
+                }
+            },
+
+            // Potassium + Fluorine
+            "K-F": {
+                equation: "2K + F₂ → 2KF",
+                energy: -567,
+                type: "exothermic",
+                info: "Potassium reacts with fluorine to form potassium fluoride, used in glass etching.",
+                visualization: {
+                    reactants: [
+                        { symbol: "K", x: 120, y: 150, connections: [] },
+                        { symbol: "K", x: 170, y: 150, connections: [] },
+                        { symbol: "F", x: 300, y: 140, connections: [3] },
+                        { symbol: "F", x: 350, y: 160, connections: [2] }
+                    ],
+                    products: [
+                        { symbol: "K", x: 180, y: 140, connections: [2] },
+                        { symbol: "F", x: 210, y: 160, connections: [0] },
+                        { symbol: "K", x: 260, y: 140, connections: [3] },
+                        { symbol: "F", x: 290, y: 160, connections: [2] }
+                    ]
+                }
+            },
+
+            // Sodium + Nitrogen
+            "Na-N": {
+                equation: "6Na + N₂ → 2Na₃N",
+                energy: -164,
+                type: "exothermic",
+                info: "Sodium reacts with nitrogen to form sodium nitride, a dark red solid that decomposes in water.",
+                visualization: {
+                    reactants: [
+                        { symbol: "Na", x: 100, y: 150, connections: [] },
+                        { symbol: "Na", x: 140, y: 150, connections: [] },
+                        { symbol: "Na", x: 180, y: 150, connections: [] },
+                        { symbol: "Na", x: 220, y: 150, connections: [] },
+                        { symbol: "Na", x: 260, y: 150, connections: [] },
+                        { symbol: "Na", x: 300, y: 150, connections: [] },
+                        { symbol: "N", x: 350, y: 140, connections: [7] },
+                        { symbol: "N", x: 390, y: 160, connections: [6] }
+                    ],
+                    products: [
+                        { symbol: "Na", x: 180, y: 140, connections: [6] },
+                        { symbol: "Na", x: 220, y: 140, connections: [6] },
+                        { symbol: "Na", x: 200, y: 170, connections: [6] },
+                        { symbol: "N", x: 210, y: 160, connections: [0, 1, 2] },
+                        { symbol: "Na", x: 260, y: 140, connections: [7] },
+                        { symbol: "Na", x: 300, y: 140, connections: [7] },
+                        { symbol: "Na", x: 280, y: 170, connections: [7] },
+                        { symbol: "N", x: 290, y: 160, connections: [4, 5, 6] }
+                    ]
+                }
+            }
+            ,
+            // ...existing code...
+            "default": {
+                equation: "No reaction under normal conditions",
+                energy: 0,
+                type: "none",
+                info: "These elements do not readily react under standard conditions. Some elements are inert or require special conditions (high temperature, pressure, catalysts) to react.",
+                visualization: {
+                    reactants: [
+                        { symbol: "?", x: 150, y: 150, connections: [] },
+                        { symbol: "?", x: 250, y: 150, connections: [] }
+                    ],
+                    products: [
+                        { symbol: "?", x: 150, y: 150, connections: [] },
+                        { symbol: "?", x: 250, y: 150, connections: [] }
+                    ]
+                }
+            }
+        };
+        
+        // Selected elements
+        let selectedElement1 = null;
+        let selectedElement2 = null;
+        
+        // Initialize the periodic table
+        function initPeriodicTable() {
+            const grid = document.getElementById('elements-grid');
+            
+            elements.forEach(element => {
+                const el = document.createElement('div');
+                el.className = 'element';
+                el.dataset.symbol = element.symbol;
+                el.innerHTML = `
+                    <div class="number">${element.number}</div>
+                    <div class="symbol">${element.symbol}</div>
+                    <div class="name">${element.name}</div>
+                `;
+                
+                // Set background color based on element group
+                el.style.backgroundColor = element.color;
+                
+                el.addEventListener('click', () => selectElement(element));
+                grid.appendChild(el);
+            });
+        }
+        
+        // Handle element selection
+        function selectElement(element) {
+            if (!selectedElement1) {
+                selectedElement1 = element;
+                updateSelectedElementDisplay(1, element);
+            } else if (!selectedElement2 && element.symbol !== selectedElement1.symbol) {
+                selectedElement2 = element;
+                updateSelectedElementDisplay(2, element);
+                document.getElementById('simulate-btn').disabled = false;
+            } else {
+                // If both are already selected, replace the second one
+                if (element.symbol !== selectedElement1.symbol) {
+                    selectedElement2 = element;
+                    updateSelectedElementDisplay(2, element);
+                    document.getElementById('simulate-btn').disabled = false;
+                }
+            }
+            
+            // Update the selected style
+            document.querySelectorAll('.element').forEach(el => {
+                el.classList.remove('selected');
+                if (el.dataset.symbol === selectedElement1?.symbol || 
+                    el.dataset.symbol === selectedElement2?.symbol) {
+                    el.classList.add('selected');
+                }
+            });
+        }
+        
+        // Update the display for selected elements
+        function updateSelectedElementDisplay(position, element) {
+            const display = document.getElementById(`selected-element-${position}`);
+            display.innerHTML = `
+                <div class="number">${element.number}</div>
+                <div class="symbol">${element.symbol}</div>
+                <div class="name">${element.name}</div>
+            `;
+            display.style.backgroundColor = element.color;
+        }
+        
+        // Simulate the reaction
+        function simulateReaction() {
+            if (!selectedElement1 || !selectedElement2) return;
+            
+            // Create reaction key (sorted alphabetically)
+            const symbols = [selectedElement1.symbol, selectedElement2.symbol].sort();
+            const reactionKey = `${symbols[0]}-${symbols[1]}`;
+            
+            // Find reaction or use default
+            const reaction = reactions[reactionKey] || reactions.default;
+            
+            // Update equation display
+            document.getElementById('equation').textContent = reaction.equation;
+            
+            // Update energy display
+            const energyValue = document.getElementById('energy-value');
+            const energyType = document.getElementById('energy-type');
+            
+            if (reaction.type === "none") {
+                energyValue.textContent = "0 kJ/mol";
+                energyType.textContent = "";
+                energyType.className = "";
+            } else {
+                energyValue.textContent = `${reaction.energy} kJ/mol`;
+                energyType.textContent = reaction.type === "exothermic" ? "🔥 Exothermic" : "❄️ Endothermic";
+                energyType.className = reaction.type;
+            }
+            
+            // Update reaction info
+            document.getElementById('reaction-info-text').textContent = reaction.info;
+            
+            // Visualize the reaction
+            visualizeReaction(reaction.visualization);
+        }
+        
+        // Visualize the reaction
+        function visualizeReaction(visualization) {
+            const container = document.getElementById('visualization');
+            container.innerHTML = "";
+            
+            // Create canvas for visualization
+            const canvas = document.createElement('div');
+            canvas.id = 'reaction-visual';
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+            canvas.style.position = "relative";
+            container.appendChild(canvas);
+            
+            // Create reactant atoms
+            visualization.reactants.forEach((atom, index) => {
+                createAtom(atom, index, canvas, "reactant", visualization);
+            });
+            
+            // After delay, transform into products
+            setTimeout(() => {
+                // Remove reactant atoms
+                document.querySelectorAll('.atom, .bond').forEach(el => el.remove());
+                
+                // Create product atoms
+                visualization.products.forEach((atom, index) => {
+                    createAtom(atom, index, canvas, "product", visualization);
+                });
+            }, 2500);
+        }
+        
+        // Create an atom visualization
+        function createAtom(atom, index, container, type, visualization) {
+            const element = elements.find(el => el.symbol === atom.symbol) || 
+                            { symbol: atom.symbol, color: "#999", radius: 40 };
+            
+            const atomEl = document.createElement('div');
+            atomEl.className = `atom ${type}`;
+            atomEl.textContent = atom.symbol;
+            atomEl.style.width = `${element.radius}px`;
+            atomEl.style.height = `${element.radius}px`;
+            atomEl.style.backgroundColor = element.color;
+            atomEl.style.left = `${atom.x - element.radius/2}px`;
+            atomEl.style.top = `${atom.y - element.radius/2}px`;
+            
+            container.appendChild(atomEl);
+            
+            // Create bonds
+            atom.connections.forEach(connIndex => {
+                const connectedAtom = (type === "reactant" ? 
+                    visualization.reactants[connIndex] : 
+                    visualization.products[connIndex]);
+                
+                if (connectedAtom) {
+                    const bond = document.createElement('div');
+                    bond.className = `bond ${type}`;
+                    
+                    const dx = connectedAtom.x - atom.x;
+                    const dy = connectedAtom.y - atom.y;
+                    const length = Math.sqrt(dx*dx + dy*dy);
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                    
+                    bond.style.width = `${length}px`;
+                    bond.style.left = `${atom.x}px`;
+                    bond.style.top = `${atom.y}px`;
+                    bond.style.transform = `rotate(${angle}deg)`;
+                    
+                    container.appendChild(bond);
+                }
+            });
+        }
+        
+        // Reset the simulation
+        function resetSimulation() {
+            selectedElement1 = null;
+            selectedElement2 = null;
+            
+            document.querySelectorAll('.element').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            document.getElementById('selected-element-1').innerHTML = `
+                <div class="number">?</div>
+                <div class="symbol">?</div>
+                <div class="name">Select Element</div>
+            `;
+            document.getElementById('selected-element-1').style.backgroundColor = "rgba(50, 70, 100, 0.8)";
+            
+            document.getElementById('selected-element-2').innerHTML = `
+                <div class="number">?</div>
+                <div class="symbol">?</div>
+                <div class="name">Select Element</div>
+            `;
+            document.getElementById('selected-element-2').style.backgroundColor = "rgba(50, 70, 100, 0.8)";
+            
+            document.getElementById('equation').textContent = "Select two elements to see possible reactions";
+            document.getElementById('energy-value').textContent = "0 kJ/mol";
+            document.getElementById('energy-type').textContent = "";
+            document.getElementById('energy-type').className = "";
+            document.getElementById('reaction-info-text').textContent = 
+                "Select two elements and click 'Simulate Reaction' to see information about the chemical reaction, including products and energy changes.";
+            
+            document.getElementById('simulate-btn').disabled = true;
+            
+            const visualContainer = document.getElementById('visualization');
+            visualContainer.innerHTML = "<div id='reaction-visual'><p>Reaction visualization will appear here</p></div>";
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initPeriodicTable();
+            
+            document.getElementById('simulate-btn').addEventListener('click', simulateReaction);
+            document.getElementById('reset-btn').addEventListener('click', resetSimulation);
+        });
+    </script>
+</body>
+</html>

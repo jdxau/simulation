@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Simulations | Simulation.com</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4A6FFF;
+            --primary-dark: #3451D1;
+            --secondary: #9C27B0;
+            --accent: #00BCD4;
+            --dark: #1A2238;
+            --light: #F8F9FC;
+            --gray: #6C757D;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--dark);
+            background-color: #f0f4f8;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 15px 0;
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            padding: 8px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 40px;
+            transition: var(--transition);
+        }
+
+        .logo span {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            position: relative;
+            padding: 5px 0;
+            transition: var(--transition);
+        }
+
+        .nav-links a:not(.btn):after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+
+        .nav-links a:not(.btn):hover:after {
+            width: 100%;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 200px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 10px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .dropdown:hover .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(74, 111, 255, 0.05);
+            color: var(--primary);
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(74, 111, 255, 0.3);
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(74, 111, 255, 0.4);
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Chemistry Content */
+        .simulations-container {
+            padding: 150px 0 100px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            color: #9C27B0;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .page-title:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 30px auto 60px;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 50px;
+            position: relative;
+        }
+
+        .search-box {
+            display: flex;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-box button {
+            padding: 0 25px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .search-box button:hover {
+            background: #7B1FA2;
+        }
+
+        .simulations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .simulation-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+            z-index: 2;
+        }
+
+        .simulation-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-image {
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            background: #f5f8ff;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .simulation-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .simulation-card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        .btn-play {
+            background: var(--accent) !important;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-play:hover {
+            background: #0097A7 !important;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #9C27B0;
+        }
+
+        .card-content p {
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 70px 0 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .footer-column p {
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-column ul li a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .footer-column ul li {
+            color: #a0aec0;
+        }
+
+        .copyright {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+
+        /* Background Canvas */
+        #chem-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .simulations-container {
+                padding: 130px 0 80px;
+            }
+            
+            .page-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                right: -100%;
+                width: 280px;
+                height: calc(100vh - 80px);
+                background: white;
+                flex-direction: column;
+                padding: 40px 20px;
+                transition: var(--transition);
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+                z-index: 999;
+            }
+            
+            .nav-links.active {
+                right: 0;
+            }
+            
+            .dropdown-content {
+                position: static;
+                width: 100%;
+                box-shadow: none;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                padding: 10px 0 0 20px;
+            }
+            
+            .page-title {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .page-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="chem-canvas"></canvas>
+    
+    <header id="header">
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwLjUgMTUuNUwxMiAxNEwxMy41IDE1LjVMMTUgMTdIMThWMTVIMTZMMTQuNSAxMy41TDE2IDEyTDE0LjUgMTAuNUwxMyA5VjZIMTFWOUw5LjUgMTAuNUw4IDEyTDkuNSAxMy41TDggMTVINlYxN0g4TDkuNSAxNS41Wk0xMiAyMkM2LjQ3NyAyMiAyIDE3LjUyMyAyIDEyQzIgNi40NzcgNi40NzcgMiAxMiAyQzE3LjUyMyAyIDIyIDYuNDc3IDIyIDEyQzIyIDE3LjUyMyAxNy41MjMgMjIgMTIgMjJaTTQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBDMTYuNDE4IDIwIDIwIDE2LjQxOCAyMCAxMkMyMCA3LjU4MiAxNi40MTggNCAxMiA0QzcuNTgyIDQgNCA3LjU4MiA0IDEyWiIgZmlsbD0iIzRBNkZGRiIvPgo8L3N2Zz4=" alt="logo" class="logo-img">
+                    <span>SIMULATION.COM</span>
+                </div>
+                <div class="menu-toggle" id="mobile-menu">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="nav-links" id="nav-links">
+                    <a href="homepage.html"><i class="fas fa-home"></i> Home</a>
+                    <div class="dropdown">
+                        <a href="#"><i class="fas fa-flask"></i> Simulations <i class="fas fa-chevron-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="phy-page.html"><i class="fas fa-atom"></i> Physics</a>
+                            <a href="chem-page.html"><i class="fas fa-vial"></i> Chemistry</a>
+                            <a href="bio-page.html"><i class="fas fa-dna"></i> Biology</a>
+                            <a href="math-page.html"><i class="fas fa-calculator"></i> Math</a>
+                        </div>
+                    </div>
+                    <a href="#"><i class="fas fa-book"></i> Learn</a>
+                    <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="simulations-container">
+        <div class="container">
+            <h1 class="page-title">Interactive Chemistry Simulations</h1>
+            <p class="page-subtitle">Explore fundamental Chemistry concepts through interactive simulations</p>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search simulations...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            
+            <div class="simulations-grid" id="simulations-grid">
+                <div class="simulation-card" data-tags="atom builder proton neutron electron">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM5QzI3QjAiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxjaXJjbGUgY3g9IjI1MCIgY3k9IjE1MCIgcj0iODAiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM5QzI3QjAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxNTAiIHI9IjUwIiBmaWxsPSIjMDBiQ0Q0IiBvcGFjaXR5PSIwLjMiLz4KPGNpcmNsZSBjeD0iMTgwIiBjeT0iMTUwIiByPSIyMCIgZmlsbD0iI0ZGRjQ5OSIvPgo8Y2lyY2xlIGN4PSIzMjAiIGN5PSIxNTAiIHI9IjIwIiBmaWxsPSIjRkZGNDk5Ii8+CjxjaXJjbGUgY3g9IjI1MCIgY3k9IjgwIiByPSIyMCIgZmlsbD0iIzQzYTlmNSIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIyMjAiIHI9IjIwIiBmaWxsPSIjNDNhOWY1Ii8+CjxjaXJjbGUgY3g9IjIwMCIgY3k9IjEwMCIgcj0iMjAiIGZpbGw9IiM0M2E5ZjUiLz4KPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTAwIiByPSIyMCIgZmlsbD0iIzQzYTlmNSIvPgo8Y2lyY2xlIGN4PSIzMDAiIGN5PSIyMDAiIHI9IjIwIiBmaWxsPSIjNDNhOWY1Ii8+CjxjaXJjbGUgY3g9IjIwMCIgY3k9IjIwMCIgcj0iMjAiIGZpbGw9IiM0M2E5ZjUiLz4KPHBhdGggZD0iTTI1MCA4MEwyNTAgMTUwIiBzdHJva2U9IiM5QzI3QjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNSw1Ii8+CjxwYXRoIGQ9Ik0yNTAgMTUwTDI1MCAyMjAiIHN0cm9rZT0iIzlDMjdCMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI1LDUiLz4KPHBhdGggZD0iTTE4MCAxNTBMMjUwIDE1MCIgc3Ryb2tlPSIjOUMyN0IwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjUsNSIvPgo8cGF0aCBkPSJNMzIwIDE1MEwyNTAgMTUwIiBzdHJva2U9IiM5QzI3QjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNSw1Ii8+Cjwvc3ZnPg==" alt="Atom Builder">
+                        <div class="card-overlay">
+                            <a href="chem-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Atom Builder</h3>
+                        <p>Explore how atoms form by changing protons, neutrons, and electrons</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 2 min</span>
+                            <span><i class="fas fa-atom"></i> Atomic Structure</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-card" data-tags="compound formation chemical reaction bonding">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM5QzI3QjAiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxwYXRoIGQ9Ik0xMDAgNzVDMTAwIDYxLjE5MiAxMTEuMTkyIDUwIDEyNSA1MEgzNzVDMzg4LjgwOCA1MCA0MDAgNjEuMTkyIDQwMCA3NVYyMjVDNDAwIDIzOC44MDggMzg4LjgwOCAyNTAgMzc1IDI1MEgxMjVDMTExLjE5MiAyNTAgMTAwIDIzOC44MDggMTAwIDIyNVY3NVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM5QzI3QjAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIxODAiIGN5PSIxMjAiIHI9IjMwIiBmaWxsPSIjRkZGNDk5Ii8+CjxjaXJjbGUgY3g9IjMyMCIgY3k9IjE4MCIgcj0iMzAiIGZpbGw9IiM0M2E5ZjUiLz4KPHBhdGggZD0iTTIxMCAxMjBMMzEwIDE4MCIgc3Ryb2tlPSIjOUMyN0IwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1kYXNoYXJyYXk9IjUsNSIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxNTAiIHI9IjQwIiBmaWxsPSIjMDBiQ0Q0IiBvcGFjaXR5PSIwLjMiLz4KPHBhdGggZD0iTTE5MCAxNTBMMjEwIDE1MCIgc3Ryb2tlPSIjOUMyN0IwIiBzdHJva2Utd2lkdGg9IjQiLz4KPHBhdGggZD0iTTI5MCAxNTBMMzEwIDE1MCIgc3Ryb2tlPSIjOUMyN0IwIiBzdHJva2Utd2lkdGg9IjQiLz4KPHBhdGggZD0iTTI1MCAxMTBMMjUwIDEzMCIgc3Ryb2tlPSIjOUMyN0IwIiBzdHJva2Utd2lkdGg9IjQiLz4KPHBhdGggZD0iTTI1MCAxNzBMMjUwIDE5MCIgc3Ryb2tlPSIjOUMyN0IwIiBzdHJva2Utd2lkdGg9IjQiLz4KPC9zdmc+" alt="Compound Formation">
+                        <div class="card-overlay">
+                            <a href="cpd-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Compound Formation</h3>
+                        <p>Investigate how elements react with each other to form compounds</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 3 min</span>
+                            <span><i class="fas fa-vial"></i> Reactions</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-card" data-tags="organic compound nomenclature naming">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM5QzI3QjAiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxwYXRoIGQ9Ik0xMDAgNzVDMTAwIDYxLjE5MiAxMTEuMTkyIDUwIDEyNSA1MEgzNzVDMzg4LjgwOCA1MCA0MDAgNjEuMTkyIDQwMCA3NVYyMjVDNDAwIDIzOC44MDggMzg4LjgwOCAyNTAgMzc1IDI1MEgxMjVDMTExLjE5MiAyNTAgMTAwIDIzOC44MDggMTAwIDIyNVY3NVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM5QzI3QjAiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTUwIDEwMEwyMDAgMTUwTDE1MCAyMDAiIHN0cm9rZT0iIzQzYTlmNSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik0yMDAgMTUwTDI1MCAxMDAiIHN0cm9rZT0iIzQzYTlmNSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik0yNTAgMTAwTDMwMCAxNTAiIHN0cm9rZT0iIzQzYTlmNSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik0zMDAgMTUwTDI1MCAyMDAiIHN0cm9rZT0iIzQzYTlmNSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik0yNTAgMjAwTDIwMCAxNTAiIHN0cm9rZT0iIzQzYTlmNSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik0yMDAgMTUwTDI1MCAxMDAiIHN0cm9rZT0iIzQzYTlmNSIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxjaXJjbGUgY3g9IjE1MCIgY3k9IjEwMCIgcj0iMTUiIGZpbGw9IiNGRkY0OTkiLz4KPGNpcmNsZSBjeD0iMjAwIiBjeT0iMTUwIiByPSIxNSIgZmlsbD0iI0ZGRjQ5OSIvPgo8Y2lyY2xlIGN4PSIxNTAiIGN5PSIyMDAiIHI9IjE1IiBmaWxsPSIjRkZGNDk5Ii8+CjxjaXJjbGUgY3g9IjMwMCIgY3k9IjE1MCIgcj0iMTUiIGZpbGw9IiNGRkY0OTkiLz4KPGNpcmNsZSBjeD0iMjUwIiBjeT0iMTAwIiByPSIxNSIgZmlsbD0iIzQzYTlmNSIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIyMDAiIHI9IjE1IiBmaWxsPSIjNDNhOWY1Ii8+Cjx0ZXh0IHg9IjE4MCIgeT0iMTcwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjOUMyN0IwIj5DNEgxMDwvdGV4dD4KPC9zdmc+" alt="Organic Nomenclature">
+                        <div class="card-overlay">
+                            <a href="cpd-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Organic Compound Nomenclature [Coming Soon]</h3>
+                        <p>Master the naming of organic compounds with interactive practice</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-molecule"></i> Organic Chemistry</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="periodic table elements properties">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM5QzI3QjAiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjE1MCIgeT0iODAiIHdpZHRoPSIyMDAiIGhlaWdodD0iMTQwIiByeD0iNSIgc3Ryb2tlPSIjMDBiQ0Q0IiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9IndoaXRlIi8+CjxyZWN0IHg9IjE2MCIgeT0iOTAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGRkY0OTkiLz4KPHJlY3QgeD0iMjEwIiB5PSI5MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iIzQzYTlmNSIvPgo8cmVjdCB4PSIyNjAiIHk9IjkwIiB3aWR0aD0iNDAiIGhlaWdodD0iMjAiIHJ4PSIzIiBmaWxsPSIjRkZGNDk5Ii8+CjxyZWN0IHg9IjMxMCIgeT0iOTAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiM0M2E5ZjUiLz4KPHJlY3QgeD0iMTYwIiB5PSIxMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiM0M2E5ZjUiLz4KPHJlY3QgeD0iMjEwIiB5PSIxMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGRkY0OTkiLz4KPHJlY3QgeD0iMjYwIiB5PSIxMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiM0M2E5ZjUiLz4KPHJlY3QgeD0iMzEwIiB5PSIxMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGRkY0OTkiLz4KPHJlY3QgeD0iMTYwIiB5PSIxNTAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGRkY0OTkiLz4KPHJlY3QgeD0iMjEwIiB5PSIxNTAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiM0M2E5ZjUiLz4KPHJlY3QgeD0iMjYwIiB5PSIxNTAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGRkY0OTkiLz4KPHJlY3QgeD0iMzEwIiB5PSIxNTAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiM0M2E5ZjUiLz4KPHJlY3QgeD0iMTYwIiB5PSIxODAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiM0M2E5ZjUiLz4KPHJlY3QgeD0iMjEwIiB5PSIxODAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGRkY0OTkiLz4KPHJlY3QgeD0iMjYwIiB5PSIxODAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiM0M2E5ZjUiLz4KPHJlY3QgeD0iMzEwIiB5PSIxODAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNGRkY0OTkiLz4KPHRleHQgeD0iMjUwIiB5PSI2MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzlDMjdCMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UGVyaW9kaWMgVGFibGU8L3RleHQ+Cjwvc3ZnPg==" alt="Periodic Table">
+                        <div class="card-overlay">
+                            <a href="#" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Periodic Table Explorer [Coming Soon]</h3>
+                        <p>Interactive exploration of element properties and trends</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-table"></i> Elements</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="chemical reactions balancing equations">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM5QzI3QjAiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjE1MCIgeT0iMTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgcng9IjEwIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjOUMyN0IwIiBzdHJva2Utd2lkdGg9IjIiLz4KPGNpcmNsZSBjeD0iMTgwIiBjeT0iMTUwIiByPSIyMCIgZmlsbD0iI0ZGRjQ5OSIvPgo8Y2lyY2xlIGN4PSIyMjAiIGN5PSIxNTAiIHI9IjIwIiBmaWxsPSIjNDNhOWY1Ii8+Cjx0ZXh0IHg9IjE5MCIgeT0iMTQwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5QzI3QjAiPis8L3RleHQ+CjxjaXJjbGUgY3g9IjI4MCIgY3k9IjE1MCIgcj0iMjAiIGZpbGw9IiM0M2E5ZjUiLz4KPHRleHQgeD0iMjUwIiB5PSIxNDAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzlDMjdCMCI+4oaSPC90ZXh0Pgo8Y2lyY2xlIGN4PSIzMjAiIGN5PSIxNTAiIHI9IjIwIiBmaWxsPSIjRkZGNDk5Ii8+Cjx0ZXh0IHg9IjMwMCIgeT0iMTQwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5QzI3QjAiPis8L3RleHQ+CjxwYXRoIGQ9Ik0xMjAgMTUwTDE2MCAxNTAiIHN0cm9rZT0iIzlDMjdCMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0zNDAgMTUwTDM4MCAxNTAiIHN0cm9rZT0iIzlDMjdCMCIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjx0ZXh0IHg9IjI1MCIgeT0iMTgwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5QzI3QjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNoZW1pY2FsIFJlYWN0aW9uPC90ZXh0Pgo8L3N2Zz4=" alt="Chemical Reactions">
+                        <div class="card-overlay">
+                            <a href="#" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Chemical Reactions [Coming Soon]</h3>
+                        <p>Balance equations and predict reaction products</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-fire"></i> Reactions</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="acid base titration ph chemistry">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM5QzI3QjAiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjIwMCIgeT0iODAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTUwIiByeD0iNSIgc3Ryb2tlPSIjOUMyN0IwIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9IndoaXRlIi8+CjxyZWN0IHg9IjIxNSIgeT0iODAiIHdpZHRoPSI3MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiMwMGJjZDQiIGZpbGwtb3BhY2l0eT0iMC4zIi8+CjxwYXRoIGQ9Ik0yNDAgODBMMjQwIDIwMCIgc3Ryb2tlPSIjOUMyN0IwIiBzdHJva2Utd2lkdGg9IjIiLz4KPGNpcmNsZSBjeD0iMTgwIiBjeT0iMjQwIiByPSIyMCIgZmlsbD0iIzQzYTlmNSIvPgo8cGF0aCBkPSJNMTgwIDI0MEwyMTUgMjIwIiBzdHJva2U9IiM5QzI3QjAiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSIzMjAiIGN5PSIyNDAiIHI9IjIwIiBmaWxsPSIjRkZGNDk5Ii8+CjxwYXRoIGQ9Ik0zMjAgMjQwTDI4NSAyMjAiIHN0cm9rZT0iIzlDMjdCMCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjx0ZXh0IHg9IjI1MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiM5QzI3QjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlRpdHJhdGlvbiBFeHBlcmltZW50PC90ZXh0Pgo8L3N2Zz4=" alt="Acid-Base Titration">
+                        <div class="card-overlay">
+                            <a href="#" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Acid-Base Titration [Coming Soon]</h3>
+                        <p>Simulate titration experiments and explore pH changes</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-vial-vial"></i> Analytical</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>simulation.com</h3>
+                    <p>Practical simulations for Education of all Subjects. Let's experience it together.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="#">Custom simulations</a></li>
+                        <li><a href="#">Mobile App simulations</a></li>
+                        <li><a href="#">AI integrated simulation Projects</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Our Team</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Ethiopia, Hawassa</li>
+                        <li><i class="fas fa-envelope"></i> info@simulation.com</li>
+                        <li><i class="fas fa-phone"></i> +251 903 932 959</li>
+                        <li><i class="fas fa-globe"></i> www.simulation.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 simulation.com. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navLinks = document.getElementById('nav-links');
+        
+        mobileMenu.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const simulationCards = document.querySelectorAll('.simulation-card');
+        
+        searchInput.addEventListener('input', filterSimulations);
+        searchBtn.addEventListener('click', filterSimulations);
+        
+        function filterSimulations() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            simulationCards.forEach(card => {
+                const tags = card.getAttribute('data-tags').toLowerCase();
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                
+                if (tags.includes(searchTerm) || title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Chemistry Canvas Animation
+        const canvas = document.getElementById('chem-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Atom class for animation
+        class Atom {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 15 + 5;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                this.color = this.getRandomAtomColor();
+                this.electrons = Math.floor(Math.random() * 3) + 1;
+                this.orbitRadius = this.radius * 2.5;
+                this.orbitSpeed = Math.random() * 0.05 + 0.02;
+                this.angle = Math.random() * Math.PI * 2;
+            }
+            
+            getRandomAtomColor() {
+                const colors = [
+                    '#FFC107', // Gold (for metals)
+                    '#00BCD4', // Cyan (for non-metals)
+                    '#9C27B0', // Purple (for noble gases)
+                    '#43A5F5', // Blue (for other elements)
+                    '#4CAF50'  // Green (for halogens)
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                if (this.x < -this.orbitRadius) this.x = canvas.width + this.orbitRadius;
+                if (this.x > canvas.width + this.orbitRadius) this.x = -this.orbitRadius;
+                if (this.y < -this.orbitRadius) this.y = canvas.height + this.orbitRadius;
+                if (this.y > canvas.height + this.orbitRadius) this.y = -this.orbitRadius;
+                
+                // Update orbit angle
+                this.angle += this.orbitSpeed;
+            }
+            
+            draw() {
+                // Draw atom nucleus
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                // Draw electron orbits
+                for (let i = 0; i < this.electrons; i++) {
+                    const orbitRadius = this.orbitRadius * (i + 1);
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, orbitRadius, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                    ctx.stroke();
+                    
+                    // Draw electrons
+                    const electronAngle = this.angle + (i * Math.PI * 2 / this.electrons);
+                    const electronX = this.x + Math.cos(electronAngle) * orbitRadius;
+                    const electronY = this.y + Math.sin(electronAngle) * orbitRadius;
+                    
+                    ctx.beginPath();
+                    ctx.arc(electronX, electronY, this.radius / 2, 0, Math.PI * 2);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Create atoms
+        const atoms = [];
+        const atomCount = Math.min(15, Math.floor(canvas.width * canvas.height / 20000));
+        
+        for (let i = 0; i < atomCount; i++) {
+            atoms.push(new Atom());
+        }
+        
+        // Draw bonds between nearby atoms
+        function drawBonds() {
+            for (let i = 0; i < atoms.length; i++) {
+                for (let j = i + 1; j < atoms.length; j++) {
+                    const dx = atoms[i].x - atoms[j].x;
+                    const dy = atoms[i].y - atoms[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Draw bond if atoms are close enough
+                    if (distance < 150) {
+                        const alpha = 1 - distance / 150;
+                        ctx.beginPath();
+                        ctx.moveTo(atoms[i].x, atoms[i].y);
+                        ctx.lineTo(atoms[j].x, atoms[j].y);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.4})`;
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background with a subtle gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#f0f4f8');
+            gradient.addColorStop(1, '#e0eaf5');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw bonds first (so they appear behind atoms)
+            drawBonds();
+            
+            // Update and draw atoms
+            atoms.forEach(atom => {
+                atom.update();
+                atom.draw();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Start animation
+        animate();
+        
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

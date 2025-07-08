@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Simulations | Simulation.com</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4A6FFF;
+            --primary-dark: #3451D1;
+            --secondary: #3F51B5;
+            --accent: #FF5722;
+            --dark: #1A2238;
+            --light: #F8F9FC;
+            --gray: #6C757D;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--dark);
+            background-color: #f5f7ff;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 15px 0;
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            padding: 8px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 40px;
+            transition: var(--transition);
+        }
+
+        .logo span {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            position: relative;
+            padding: 5px 0;
+            transition: var(--transition);
+        }
+
+        .nav-links a:not(.btn):after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+
+        .nav-links a:not(.btn):hover:after {
+            width: 100%;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 200px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 10px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .dropdown:hover .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(74, 111, 255, 0.05);
+            color: var(--primary);
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(74, 111, 255, 0.3);
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(74, 111, 255, 0.4);
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Physics Content */
+        .simulations-container {
+            padding: 150px 0 100px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            color: var(--secondary);
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .page-title:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 30px auto 60px;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 50px;
+            position: relative;
+        }
+
+        .search-box {
+            display: flex;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-box button {
+            padding: 0 25px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .search-box button:hover {
+            background: #303F9F;
+        }
+
+        .simulations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .simulation-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+            z-index: 2;
+        }
+
+        .simulation-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-image {
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            background: #f0f2ff;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .simulation-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .simulation-card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        .btn-play {
+            background: var(--accent) !important;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-play:hover {
+            background: #E64A19 !important;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--secondary);
+        }
+
+        .card-content p {
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 70px 0 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .footer-column p {
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-column ul li a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .footer-column ul li {
+            color: #a0aec0;
+        }
+
+        .copyright {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+
+        /* Background Canvas */
+        #physics-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Physics Animations */
+        .physics-animation {
+            position: absolute;
+            z-index: 1;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .physics-particle {
+            position: absolute;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        /* Physics Symbols */
+        .physics-symbol {
+            position: absolute;
+            color: rgba(63, 81, 181, 0.2);
+            font-size: 24px;
+            z-index: 1;
+            pointer-events: none;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 0.3; }
+        }
+
+        @keyframes orbit {
+            0% { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .simulations-container {
+                padding: 130px 0 80px;
+            }
+            
+            .page-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                right: -100%;
+                width: 280px;
+                height: calc(100vh - 80px);
+                background: white;
+                flex-direction: column;
+                padding: 40px 20px;
+                transition: var(--transition);
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+                z-index: 999;
+            }
+            
+            .nav-links.active {
+                right: 0;
+            }
+            
+            .dropdown-content {
+                position: static;
+                width: 100%;
+                box-shadow: none;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                padding: 10px 0 0 20px;
+            }
+            
+            .page-title {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .page-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="physics-canvas"></canvas>
+    
+    <!-- Physics animations in background -->
+    <div class="physics-animation" id="physics-animation"></div>
+    
+    <header id="header">
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwLjUgMTUuNUwxMiAxNEwxMy41IDE1LjVMMTUgMTdIMThWMTVIMTZMMTQuNSAxMy41TDE2IDEyTDE0LjUgMTAuNUwxMyA5VjZIMTFWOUw5LjUgMTAuNUw4IDEyTDkuNSAxMy41TDggMTVINlYxN0g4TDkuNSAxNS41Wk0xMiAyMkM2LjQ3NyAyMiAyIDE3LjUyMyAyIDEyQzIgNi40NzcgNi40NzcgMiAxMiAyQzE3LjUyMyAyIDIyIDYuNDc3IDIyIDEyQzIyIDE3LjUyMyAxNy41MjMgMjIgMTIgMjJaTTQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBDMTYuNDE4IDIwIDIwIDE2LjQxOCAyMCAxMkMyMCA3LjU4MiAxNi40MTggNCAxMiA0QzcuNTgyIDQgNCA3LjU4MiA0IDEyWiIgZmlsbD0iIzRBNkZGRiIvPgo8L3N2Zz4=" alt="logo" class="logo-img">
+                    <span>SIMULATION.COM</span>
+                </div>
+                <div class="menu-toggle" id="mobile-menu">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="nav-links" id="nav-links">
+                    <a href="homepage.html"><i class="fas fa-home"></i> Home</a>
+                    <div class="dropdown">
+                        <a href="#"><i class="fas fa-flask"></i> Simulations <i class="fas fa-chevron-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="phy-page.html"><i class="fas fa-atom"></i> Physics</a>
+                            <a href="chem-page.html"><i class="fas fa-vial"></i> Chemistry</a>
+                            <a href="bio-page.html"><i class="fas fa-dna"></i> Biology</a>
+                            <a href="math-page.html"><i class="fas fa-calculator"></i> Math</a>
+                        </div>
+                    </div>
+                    <a href="#"><i class="fas fa-book"></i> Learn</a>
+                    <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="simulations-container">
+        <div class="container">
+            <h1 class="page-title">Interactive Physics Simulations</h1>
+            <p class="page-subtitle">Explore fundamental physics concepts through interactive simulations</p>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search simulations...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            
+            <div class="simulations-grid" id="simulations-grid">
+                <div class="simulation-card" data-tags="gravity motion free fall kinematics">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjEwMCIgeT0iNTAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiByeD0iMTAiIGZpbGw9IndoaXRlIiBzdHJva2U9IiMzRjUxQjUiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxMDAiIHI9IjMwIiBmaWxsPSIjRkY1NzIyIiBzdHJva2U9IiNGRjU3MjIiIHN0cm9rZS13aWR0aD0iMiIgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwKSIvPgo8cGF0aCBkPSJNMjIwIDEwMEwyODAgMTAwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMjIwIDEwMEwyNTAgMjUwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNCA0Ii8+CjxwYXRoIGQ9Ik0yODAgMTAwTDI1MCAyNTAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI0IDQiLz4KPHBhdGggZD0iTTE1MCAyNTBMMzUwIDI1MCIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTE1MCAyNTBMMjAwIDIwMCIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTMwMCAyNTBMMjUwIDIwMCIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMiLz4KPHRleHQgeD0iMjUwIiB5PSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzNGNTFCNSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+RnJlZSBGYWxsIFNpbXVsYXRpb248L3RleHQ+CjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwIj4KPHJlY3QgeD0iMjIwIiB5PSI3MCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiByeD0iMzAiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+" alt="Free Fall">
+                        <div class="card-overlay">
+                            <a href="frfl-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Free Fall Motion</h3>
+                        <p>Explore how objects accelerate under gravity with different initial conditions</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 2 min</span>
+                            <span><i class="fas fa-level-down-alt"></i> Beginner</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-card" data-tags="projectile motion trajectory parabola">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjEwMCIgeT0iNTAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiByeD0iMTAiIGZpbGw9IndoaXRlIiBzdHJva2U9IiMzRjUxQjUiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTUwIDI1MEwzNTAgMjUwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMyIvPgo8cGF0aCBkPSJNMTUwIDI1MEwyMDAgMTUwTDI1MCAyMDhMMzAwIDE1MEwzNTAgMjUwIiBzdHJva2U9IiNGRjU3MjIiIHN0cm9rZS13aWR0aD0iNCIgZmlsbD0ibm9uZSIvPgo8Y2lyY2xlIGN4PSIyMDAiIGN5PSIxNTAiIHI9IjgiIGZpbGw9IiNGRjU3MjIiLz4KPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTUwIiByPSI4IiBmaWxsPSIjRkY1NzIyIi8+CjxjaXJjbGUgY3g9IjI1MCIgY3k9IjIwOCIgcj0iOCIgZmlsbD0iI0ZGNTcyMiIvPgo8dGV4dCB4PSIyNTAiIHk9IjMwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjM0Y1MUI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Qcm9qZWN0aWxlIE1vdGlvbjwvdGV4dD4KPC9zdmc+" alt="Projectile Motion">
+                        <div class="card-overlay">
+                            <a href="prjctl-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Projectile Motion</h3>
+                        <p>Launch projectiles at different angles and velocities to study trajectories</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 3 min</span>
+                            <span><i class="fas fa-level-up-alt"></i> Intermediate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-card" data-tags="pendulum harmonic motion oscillation">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjEwMCIgeT0iNTAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiByeD0iMTAiIGZpbGw9IndoaXRlIiBzdHJva2U9IiMzRjUxQjUiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMjAwIDUwTDIwMCAxMDAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik0yMDAgMTAwQzIyMCAxNTAgMTgwIDE1MCAyMDAgMjAwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMyIgZmlsbD0ibm9uZSIvPgo8Y2lyY2xlIGN4PSIyMDAiIGN5PSIyMDAiIHI9IjIwIiBmaWxsPSIjRkY1NzIyIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIyMDAiIGN5PSIxMDAiIHI9IjEwIiBmaWxsPSIjRkY1NzIyIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTgwIDE1MEwyMjAgMTUwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8dGV4dCB4PSIyNTAiIHk9IjMwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjM0Y1MUI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QZW5kdWx1bSBNb3Rpb248L3RleHQ+Cjwvc3ZnPg==" alt="Pendulum Motion">
+                        <div class="card-overlay">
+                            <a href="pndlm-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Pendulum Motion</h3>
+                        <p>Investigate how length and gravity affect the period of a pendulum</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 4 min</span>
+                            <span><i class="fas fa-level-up-alt"></i> Intermediate</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="spring oscillation harmonic hooke">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjEwMCIgeT0iNTAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiByeD0iMTAiIGZpbGw9IndoaXRlIiBzdHJva2U9IiMzRjUxQjUiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTUwIDE1MEwzNTAgMTUwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMyIvPgo8cGF0aCBkPSJNMTgwIDEwMEwyMjAgMTUwTDI2MCAxMDJMMzAwIDE1MEwzMjAgMTAwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxjaXJjbGUgY3g9IjE1MCIgY3k9IjE1MCIgcj0iMjAiIGZpbGw9IiNGRjU3MjIiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxjaXJjbGUgY3g9IjM1MCIgY3k9IjE1MCIgcj0iMjAiIGZpbGw9IiNGRjU3MjIiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjx0ZXh0IHg9IjI1MCIgeT0iMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiMzRjUxQjUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNwcmluZyBNYXNzIFN5c3RlbTwvdGV4dD4KPC9zdmc+" alt="Spring Mass">
+                        <div class="card-overlay">
+                            <a href="sprngmss-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Spring Mass System</h3>
+                        <p>Explore Hooke's Law and how spring constant affects oscillation</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 3 min</span>
+                            <span><i class="fas fa-level-up-alt"></i> Intermediate</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="collision momentum energy conservation">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjEwMCIgeT0iNTAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiByeD0iMTAiIGZpbGw9IndoaXRlIiBzdHJva2U9IiMzRjUxQjUiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIxNTAiIGN5PSIxNTAiIHI9IjMwIiBmaWxsPSIjRkY1NzIyIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIzNTAiIGN5PSIxNTAiIHI9IjQwIiBmaWxsPSIjM0Y1MUI1IiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTgwIDE1MEwzMjAgMTUwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWRhc2hhcnJheT0iNCA0Ii8+Cjx0ZXh0IHg9IjI1MCIgeT0iMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiMzRjUxQjUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNvbGxpc2lvbiBTaW11bGF0b3I8L3RleHQ+Cjwvc3ZnPg==" alt="Collisions">
+                        <div class="card-overlay">
+                            <a href="clsn-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Collision Simulator</h3>
+                        <p>Investigate elastic and inelastic collisions with different parameters</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 5 min</span>
+                            <span><i class="fas fa-level-up-alt"></i> Advanced</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="gravity orbits planetary kepler">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjEwMCIgeT0iNTAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiByeD0iMTAiIGZpbGw9IndoaXRlIiBzdHJva2U9IiMzRjUxQjUiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxNTAiIHI9IjUwIiBmaWxsPSIjRkY1NzIyIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxNTAiIHI9IjcwIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMiAyIi8+CjxjaXJjbGUgY3g9IjIwMCIgY3k9IjE1MCIgcj0iMjAiIGZpbGw9IiMzRjUxQjUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxjaXJjbGUgY3g9IjMwMCIgY3k9IjE1MCIgcj0iMjUiIGZpbGw9IiMzRjUxQjUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjx0ZXh0IHg9IjI1MCIgeT0iMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiMzRjUxQjUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk9yYml0YWwgR3Jhdml0eTwvdGV4dD4KPC9zdmc+" alt="Orbital Motion">
+                        <div class="card-overlay">
+                            <a href="orbt-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Orbital Motion[Coming soon]</h3>
+                        <p>Simulate planetary motion and explore how velocity affects orbits</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-level-up-alt"></i> Advanced</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>simulation.com</h3>
+                    <p>Practical physics simulations for education and exploration. Experience the laws of nature in action.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Physics Simulations</h3>
+                    <ul>
+                        <li><a href="#">Classical Mechanics</a></li>
+                        <li><a href="#">Electromagnetism</a></li>
+                        <li><a href="#">Thermodynamics</a></li>
+                        <li><a href="#">Quantum Physics</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Our Team</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Physics Department, University</li>
+                        <li><i class="fas fa-envelope"></i> physics@simulation.com</li>
+                        <li><i class="fas fa-phone"></i> +251 903 932 959</li>
+                        <li><i class="fas fa-globe"></i> physics.simulation.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 simulation.com. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navLinks = document.getElementById('nav-links');
+        
+        mobileMenu.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const simulationCards = document.querySelectorAll('.simulation-card');
+        
+        searchInput.addEventListener('input', filterSimulations);
+        searchBtn.addEventListener('click', filterSimulations);
+        
+        function filterSimulations() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            simulationCards.forEach(card => {
+                const tags = card.getAttribute('data-tags').toLowerCase();
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                
+                if (tags.includes(searchTerm) || title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Physics Canvas Animation
+        const canvas = document.getElementById('physics-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Physics constants
+        const G = 0.5; // Gravitational constant
+        const particles = [];
+        
+        // Particle class
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+                this.color = `rgba(${Math.floor(Math.random() * 100 + 50)}, ${Math.floor(Math.random() * 100 + 50)}, ${Math.floor(Math.random() * 200 + 50)}, ${Math.random() * 0.4 + 0.2})`;
+                this.mass = this.size * 0.5;
+                this.charge = Math.random() > 0.5 ? 1 : -1;
+            }
+            
+            update() {
+                // Move with velocity
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // Boundary conditions
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            interact(other) {
+                const dx = other.x - this.x;
+                const dy = other.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 100) {
+                    // Gravitational attraction
+                    const force = G * this.mass * other.mass / (distance * distance);
+                    const angle = Math.atan2(dy, dx);
+                    
+                    this.speedX += force * Math.cos(angle) / this.mass;
+                    this.speedY += force * Math.sin(angle) / this.mass;
+                    
+                    // Draw connection if particles are close
+                    if (distance < 80) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(other.x, other.y);
+                        ctx.strokeStyle = `rgba(63, 81, 181, ${0.3 - distance/266})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        
+        // Create particles
+        const particleCount = Math.min(80, Math.floor(canvas.width * canvas.height / 5000));
+        
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+        
+        // Physics symbols
+        const symbols = ['F=ma', 'E=mc²', 'p=mv', 'F=G(m₁m₂)/r²', 'KE=½mv²', 'λ=h/p', 'a=Δv/Δt', 'τ=r×F', '∇·E=ρ/ε₀', 'H=ΔQ'];
+        
+        // Create floating physics symbols
+        for (let i = 0; i < 15; i++) {
+            const symbol = document.createElement('div');
+            symbol.className = 'physics-symbol';
+            symbol.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            symbol.style.left = `${Math.random() * 100}%`;
+            symbol.style.top = `${Math.random() * 100}%`;
+            symbol.style.fontSize = `${Math.random() * 20 + 16}px`;
+            symbol.style.animationDuration = `${Math.random() * 20 + 10}s`;
+            symbol.style.animationDelay = `${Math.random() * 5}s`;
+            document.body.appendChild(symbol);
+        }
+        
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background with subtle gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#f0f5ff');
+            gradient.addColorStop(1, '#e6ebff');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw particles
+            particles.forEach(particle => {
+                particle.update();
+                
+                // Apply interactions
+                particles.forEach(other => {
+                    if (particle !== other) {
+                        particle.interact(other);
+                    }
+                });
+                
+                particle.draw();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Start animation
+        animate();
+        
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

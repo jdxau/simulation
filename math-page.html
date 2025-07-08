@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Simulations | Simulation.com</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4A6FFF;
+            --primary-dark: #3451D1;
+            --secondary: #3F51B5;
+            --accent: #FF5722;
+            --dark: #1A2238;
+            --light: #F8F9FC;
+            --gray: #6C757D;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--dark);
+            background-color: #f5f7ff;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 15px 0;
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            padding: 8px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 40px;
+            transition: var(--transition);
+        }
+
+        .logo span {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            position: relative;
+            padding: 5px 0;
+            transition: var(--transition);
+        }
+
+        .nav-links a:not(.btn):after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+
+        .nav-links a:not(.btn):hover:after {
+            width: 100%;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 200px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 10px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .dropdown:hover .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(74, 111, 255, 0.05);
+            color: var(--primary);
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(74, 111, 255, 0.3);
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(74, 111, 255, 0.4);
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Math Content */
+        .simulations-container {
+            padding: 150px 0 100px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            color: var(--secondary);
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .page-title:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 30px auto 60px;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 50px;
+            position: relative;
+        }
+
+        .search-box {
+            display: flex;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-box button {
+            padding: 0 25px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .search-box button:hover {
+            background: #303F9F;
+        }
+
+        .simulations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .simulation-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+            z-index: 2;
+        }
+
+        .simulation-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-image {
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            background: #f0f2ff;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .simulation-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .simulation-card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        .btn-play {
+            background: var(--accent) !important;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-play:hover {
+            background: #E64A19 !important;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--secondary);
+        }
+
+        .card-content p {
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 70px 0 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .footer-column p {
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-column ul li a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .footer-column ul li {
+            color: #a0aec0;
+        }
+
+        .copyright {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+
+        /* Background Canvas */
+        #math-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .simulations-container {
+                padding: 130px 0 80px;
+            }
+            
+            .page-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                right: -100%;
+                width: 280px;
+                height: calc(100vh - 80px);
+                background: white;
+                flex-direction: column;
+                padding: 40px 20px;
+                transition: var(--transition);
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+                z-index: 999;
+            }
+            
+            .nav-links.active {
+                right: 0;
+            }
+            
+            .dropdown-content {
+                position: static;
+                width: 100%;
+                box-shadow: none;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                padding: 10px 0 0 20px;
+            }
+            
+            .page-title {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .page-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="math-canvas"></canvas>
+    
+    <header id="header">
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwLjUgMTUuNUwxMiAxNEwxMy41IDE1LjVMMTUgMTdIMThWMTVIMTZMMTQuNSAxMy41TDE2IDEyTDE0LjUgMTAuNUwxMyA5VjZIMTFWOUw5LjUgMTAuNUw4IDEyTDkuNSAxMy41TDggMTVINlYxN0g4TDkuNSAxNS41Wk0xMiAyMkM2LjQ3NyAyMiAyIDE3LjUyMyAyIDEyQzIgNi40NzcgNi40NzcgMiAxMiAyQzE3LjUyMyAyIDIyIDYuNDc3IDIyIDEyQzIyIDE3LjUyMyAxNy41MjMgMjIgMTIgMjJaTTQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBDMTYuNDE4IDIwIDIwIDE2LjQxOCAyMCAxMkMyMCA3LjU4MiAxNi40MTggNCAxMiA0QzcuNTgyIDQgNCA3LjU4MiA0IDEyWiIgZmlsbD0iIzRBNkZGRiIvPgo8L3N2Zz4=" alt="logo" class="logo-img">
+                    <span>SIMULATION.COM</span>
+                </div>
+                <div class="menu-toggle" id="mobile-menu">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="nav-links" id="nav-links">
+                    <a href="homepage.html"><i class="fas fa-home"></i> Home</a>
+                    <div class="dropdown">
+                        <a href="#"><i class="fas fa-flask"></i> Simulations <i class="fas fa-chevron-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="phy-page.html"><i class="fas fa-atom"></i> Physics</a>
+                            <a href="chem-page.html"><i class="fas fa-vial"></i> Chemistry</a>
+                            <a href="bio-page.html"><i class="fas fa-dna"></i> Biology</a>
+                            <a href="math-page.html"><i class="fas fa-calculator"></i> Math</a>
+                        </div>
+                    </div>
+                    <a href="#"><i class="fas fa-book"></i> Learn</a>
+                    <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="simulations-container">
+        <div class="container">
+            <h1 class="page-title">Interactive Math Simulations</h1>
+            <p class="page-subtitle">Explore fundamental Math concepts through interactive simulations</p>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search simulations...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            
+            <div class="simulations-grid" id="simulations-grid">
+                <div class="simulation-card" data-tags="quadratic equation graph parabola">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjEwMCIgeT0iMTAwIiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEwMCIgcng9IjEwIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjIiLz4KPHBhdGggZD0iTTEwMCAxNTBMMzAwIDE1MCIgc3Ryb2tlPSIjQ0NDIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjIsMiIvPgo8cGF0aCBkPSJNMjAwIDUwTDIwMCAyNTAiIHN0cm9rZT0iI0NDQyIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSIyLDIiLz4KPHBhdGggZD0iTTEyMCAxODBMMTgwIDEyMEwyNDAgMTgwTDMwMCAxMjBMMzYwIDE4MCIgc3Ryb2tlPSIjRkY1NzIyIiBzdHJva2Utd2lkdGg9IjQiIGZpbGw9Im5vbmUiLz4KPGNpcmNsZSBjeD0iMTIwIiBjeT0iMTgwIiByPSI1IiBmaWxsPSIjRkY1NzIyIi8+CjxjaXJjbGUgY3g9IjE4MCIgY3k9IjEyMCIgcj0iNSIgZmlsbD0iI0ZGNTcyMiIvPgo8Y2lyY2xlIGN4PSIyNDAiIGN5PSIxODAiIHI9IjUiIGZpbGw9IiNGRjU3MjIiLz4KPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTIwIiByPSI1IiBmaWxsPSIjRkY1NzIyIi8+CjxjaXJjbGUgY3g9IjM2MCIgY3k9IjE4MCIgcj0iNSIgZmlsbD0iI0ZGNTcyMiIvPgo8dGV4dCB4PSIyMDAiIHk9IjgwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjM0Y1MUI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5RdWFkcmF0aWMgRnVuY3Rpb248L3RleHQ+Cjwvc3ZnPg==" alt="Quadratic Graphing">
+                        <div class="card-overlay">
+                            <a href="grph-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Quadratic Graphing</h3>
+                        <p>Visualize and explore quadratic functions and their properties</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 2 min</span>
+                            <span><i class="fas fa-chart-line"></i> Algebra</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-card" data-tags="matrices linear algebra transformation">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjE1MCIgeT0iMTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgcng9IjEwIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjIiLz4KPHJlY3QgeD0iMTcwIiB5PSIxMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiMzRjUxQjUiIG9wYWNpdHk9IjAuMyIvPgo8cmVjdCB4PSIyMjAiIHk9IjEyMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iIzNGNTFCNSIgb3BhY2l0eT0iMC4zIi8+CjxyZWN0IHg9IjI3MCIgeT0iMTIwIiB3aWR0aD0iNDAiIGhlaWdodD0iMjAiIHJ4PSIzIiBmaWxsPSIjM0Y1MUI1IiBvcGFjaXR5PSIwLjMiLz4KPHJlY3QgeD0iMTcwIiB5PSIxNTAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiMzRjUxQjUiIG9wYWNpdHk9IjAuMyIvPgo8cmVjdCB4PSIyMjAiIHk9IjE1MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iIzNGNTFCNSIgb3BhY2l0eT0iMC4zIi8+CjxyZWN0IHg9IjI3MCIgeT0iMTUwIiB3aWR0aD0iNDAiIGhlaWdodD0iMjAiIHJ4PSIzIiBmaWxsPSIjM0Y1MUI1IiBvcGFjaXR5PSIwLjMiLz4KPHJlY3QgeD0iMTcwIiB5PSIxODAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiMzRjUxQjUiIG9wYWNpdHk9IjAuMyIvPgo8cmVjdCB4PSIyMjAiIHk9IjE4MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iIzNGNTFCNSIgb3BhY2l0eT0iMC4zIi8+CjxyZWN0IHg9IjI3MCIgeT0iMTgwIiB3aWR0aD0iNDAiIGhlaWdodD0iMjAiIHJ4PSIzIiBmaWxsPSIjM0Y1MUI1IiBvcGFjaXR5PSIwLjMiLz4KPHRleHQgeD0iMjUwIiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzNGNTFCNSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TWF0cml4IE9wZXJhdGlvbnM8L3RleHQ+Cjwvc3ZnPg==" alt="Matrix Operations">
+                        <div class="card-overlay">
+                            <a href="mtrx-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Matrix Operations [Coming Soon]</h3>
+                        <p>Perform matrix calculations and visualize transformations</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 3 min</span>
+                            <span><i class="fas fa-border-all"></i> Linear Algebra</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-card" data-tags="data analysis statistics visualization">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjEwMCIgeT0iMTAwIiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEwMCIgcng9IjEwIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjIiLz4KPHBhdGggZD0iTTEwMCAyMDBMMTQwIDE0MEwxODAgMTgwTDIyMCAxMjBMMjYwIDE2MEwzMDAgMTQwTDM0MCAxODBMMzgwIDE0MEw0MDAgMjAwIiBzdHJva2U9IiNGRjU3MjIiIHN0cm9rZS13aWR0aD0iNCIgZmlsbD0ibm9uZSIvPgo8Y2lyY2xlIGN4PSIxMDAiIGN5PSIyMDAiIHI9IjUiIGZpbGw9IiNGRjU3MjIiLz4KPGNpcmNsZSBjeD0iMTQwIiBjeT0iMTQwIiByPSI1IiBmaWxsPSIjRkY1NzIyIi8+CjxjaXJjbGUgY3g9IjE4MCIgY3k9IjE4MCIgcj0iNSIgZmlsbD0iI0ZGNTcyMiIvPgo8Y2lyY2xlIGN4PSIyMjAiIGN5PSIxMjAiIHI9IjUiIGZpbGw9IiNGRjU3MjIiLz4KPGNpcmNsZSBjeD0iMjYwIiBjeT0iMTYwIiByPSI1IiBmaWxsPSIjRkY1NzIyIi8+CjxjaXJjbGUgY3g9IjMwMCIgY3k9IjE0MCIgcj0iNSIgZmlsbD0iI0ZGNTcyMiIvPgo8Y2lyY2xlIGN4PSIzNDAiIGN5PSIxODAiIHI9IjUiIGZpbGw9IiNGRjU3MjIiLz4KPGNpcmNsZSBjeD0iMzgwIiBjeT0iMTQwIiByPSI1IiBmaWxsPSIjRkY1NzIyIi8+CjxjaXJjbGUgY3g9IjQwMCIgY3k9IjIwMCIgcj0iNSIgZmlsbD0iI0ZGNTcyMiIvPgo8dGV4dCB4PSIyNTAiIHk9IjgwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjM0Y1MUI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5EYXRhIEFuYWx5c2lzPC90ZXh0Pgo8L3N2Zz4=" alt="Data Analysis">
+                        <div class="card-overlay">
+                            <a href="stats-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Data Analysis [Coming Soon]</h3>
+                        <p>Visualize and analyze datasets with statistical tools</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 4 min</span>
+                            <span><i class="fas fa-chart-bar"></i> Statistics</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="geometry shapes angles theorems">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjE1MCIgeT0iMTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgcng9IjEwIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjIiLz4KPHBhdGggZD0iTTE1MCAxMDBMMzUwIDIwMCIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTE1MCAyMDBMMzUwIDEwMCIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTI1MCAxMDBMMjUwIDIwMCIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTE1MCAxNTBMMzUwIDE1MCIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjMiLz4KPGNpcmNsZSBjeD0iMTUwIiBjeT0iMTAwIiByPSIxMCIgZmlsbD0iI0ZGNTcyMiIvPgo8Y2lyY2xlIGN4PSIzNTAiIGN5PSIyMDAiIHI9IjEwIiBmaWxsPSIjRkY1NzIyIi8+CjxjaXJjbGUgY3g9IjE1MCIgY3k9IjIwMCIgcj0iMTAiIGZpbGw9IiNGRjU3MjIiLz4KPGNpcmNsZSBjeD0iMzUwIiBjeT0iMTAwIiByPSIxMCIgZmlsbD0iI0ZGNTcyMiIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxMDAiIHI9IjEwIiBmaWxsPSIjRkY1NzIyIi8+CjxjaXJjbGUgY3g9IjI1MCIgY3k9IjIwMCIgcj0iMTAiIGZpbGw9IiNGRjU3MjIiLz4KPGNpcmNsZSBjeD0iMTUwIiBjeT0iMTUwIiByPSIxMCIgZmlsbD0iI0ZGNTcyMiIvPgo8Y2lyY2xlIGN4PSIzNTAiIGN5PSIxNTAiIHI9IjEwIiBmaWxsPSIjRkY1NzIyIi8+Cjx0ZXh0IHg9IjI1MCIgeT0iODAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiMzRjUxQjUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkdlb21ldHJpYyBTaGFwZXM8L3RleHQ+Cjwvc3ZnPg==" alt="Geometry Explorer">
+                        <div class="card-overlay">
+                            <a href="#" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Geometry Explorer [Coming Soon]</h3>
+                        <p>Explore geometric shapes, angles, and theorems interactively</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-draw-polygon"></i> Geometry</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="calculus derivatives integrals limits">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjEwMCIgeT0iMTAwIiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEwMCIgcng9IjEwIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjIiLz4KPHBhdGggZD0iTTEwMCAxNTBMMzAwIDE1MCIgc3Ryb2tlPSIjQ0NDIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjIsMiIvPgo8cGF0aCBkPSJNMjAwIDUwTDIwMCAyNTAiIHN0cm9rZT0iI0NDQyIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSIyLDIiLz4KPHBhdGggZD0iTTE0MCAxODBMMTgwIDE0MEwyMjAgMTgwTDI2MCAxNDBMMzAwIDE4MEwzNDAgMTQwIiBzdHJva2U9IiNGRjU3MjIiIHN0cm9rZS13aWR0aD0iNCIgZmlsbD0ibm9uZSIvPgo8cGF0aCBkPSJNMTQwIDEyMEwxODAgMTYwTDIyMCAxMjBMMjYwIDE2MEwzMDAgMTIwTDM0MCAxNjAiIHN0cm9rZT0iIzNGNTFCNSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtZGFzaGFycmF5PSI1LDUiIGZpbGw9Im5vbmUiLz4KPGNpcmNsZSBjeD0iMTQwIiBjeT0iMTgwIiByPSI1IiBmaWxsPSIjRkY1NzIyIi8+CjxjaXJjbGUgY3g9IjE4MCIgY3k9IjE0MCIgcj0iNSIgZmlsbD0iI0ZGNTcyMiIvPgo8Y2lyY2xlIGN4PSIyMjAiIGN5PSIxODAiIHI9IjUiIGZpbGw9IiNGRjU3MjIiLz4KPGNpcmNsZSBjeD0iMjYwIiBjeT0iMTQwIiByPSI1IiBmaWxsPSIjRkY1NzIyIi8+CjxjaXJjbGUgY3g9IjMwMCIgY3k9IjE4MCIgcj0iNSIgZmlsbD0iI0ZGNTcyMiIvPgo8Y2lyY2xlIGN4PSIzNDAiIGN5PSIxNDAiIHI9IjUiIGZpbGw9IiNGRjU3MjIiLz4KPHRleHQgeD0iMjUwIiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzNGNTFCNSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Q2FsY3VsdXMgVmlzdWFsaXplcjwvdGV4dD4KPC9zdmc+" alt="Calculus Visualizer">
+                        <div class="card-overlay">
+                            <a href="#" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Calculus Visualizer [Coming Soon]</h3>
+                        <p>Explore derivatives, integrals, and limits interactively</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-infinity"></i> Calculus</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="probability statistics distributions">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+CjxyZWN0IHg9IjE1MCIgeT0iMTAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgcng9IjEwIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjIiLz4KPGNpcmNsZSBjeD0iMTgwIiBjeT0iMTUwIiByPSI1MCIgZmlsbD0iIzNGNTFCNSIgZmlsbC1vcGFjaXR5PSIwLjEiIHN0cm9rZT0iIzNGNTFCNSIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxjaXJjbGUgY3g9IjIyMCIgY3k9IjE1MCIgcj0iNDAiIGZpbGw9IiMzRjUxQjUiIGZpbGwtb3BhY2l0eT0iMC4yIiBzdHJva2U9IiMzRjUxQjUiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIyNjAiIGN5PSIxNTAiIHI9IjMwIiBmaWxsPSIjM0Y1MUI1IiBmaWxsLW9wYWNpdHk9IjAuMyIgc3Ryb2tlPSIjM0Y1MUI1IiBzdHJva2Utd2lkdGg9IjIiLz4KPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTUwIiByPSIyMCIgZmlsbD0iIzNGNTFCNSIgZmlsbC1vcGFjaXR5PSIwLjQiIHN0cm9rZT0iIzNGNTFCNSIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjx0ZXh0IHg9IjE4MCIgeT0iMTIwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNGRjU3MjIiPjMwJTwvdGV4dD4KPHRleHQgeD0iMjIwIiB5PSIxMjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iI0ZGNTcyMiI+MjAlPC90ZXh0Pgo8dGV4dCB4PSIyNjAiIHk9IjEyMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmaWxsPSIjRkY1NzIyIj4xNSU8L3RleHQ+Cjx0ZXh0IHg9IjMwMCIgeT0iMTIwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNGRjU3MjIiPjEwJTwvdGV4dD4KPHRleHQgeD0iMjUwIiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzNGNTFCNSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UHJvYmFiaWxpdHkgRGlzdHJpYnV0aW9uPC90ZXh0Pgo8L3N2Zz4=" alt="Probability Distribution">
+                        <div class="card-overlay">
+                            <a href="#" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Probability Simulator[Coming Soon]</h3>
+                        <p>Explore probability distributions and statistical concepts</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i>soon</span>
+                            <span><i class="fas fa-dice"></i> Statistics</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>simulation.com</h3>
+                    <p>Practical simulations for Education of all Subjects. Let's experience it together.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="#">Custom simulations</a></li>
+                        <li><a href="#">Mobile App simulations</a></li>
+                        <li><a href="#">AI integrated simulation Projects</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Our Team</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Ethiopia, Hawassa</li>
+                        <li><i class="fas fa-envelope"></i> info@simulation.com</li>
+                        <li><i class="fas fa-phone"></i> +251 903 932 959</li>
+                        <li><i class="fas fa-globe"></i> www.simulation.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 simulation.com. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navLinks = document.getElementById('nav-links');
+        
+        mobileMenu.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const simulationCards = document.querySelectorAll('.simulation-card');
+        
+        searchInput.addEventListener('input', filterSimulations);
+        searchBtn.addEventListener('click', filterSimulations);
+        
+        function filterSimulations() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            simulationCards.forEach(card => {
+                const tags = card.getAttribute('data-tags').toLowerCase();
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                
+                if (tags.includes(searchTerm) || title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Math Canvas Animation
+        const canvas = document.getElementById('math-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Shape class for animation
+        class MathShape {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 40 + 10;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = Math.random() * 0.02 - 0.01;
+                this.type = Math.floor(Math.random() * 4); // 0: circle, 1: square, 2: triangle, 3: equation
+                this.color = `rgba(${Math.floor(Math.random() * 60 + 60)}, ${Math.floor(Math.random() * 60 + 60)}, ${Math.floor(Math.random() * 150 + 100)}, ${Math.random() * 0.4 + 0.2})`;
+                this.equations = ['y=x²', 'πr²', 'a²+b²=c²', 'e=mc²', 'f(x)=∫', 'd/dx', '∑', '√', '∠', '∞'];
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.rotation += this.rotationSpeed;
+                
+                if (this.x < -this.size) this.x = canvas.width + this.size;
+                if (this.x > canvas.width + this.size) this.x = -this.size;
+                if (this.y < -this.size) this.y = canvas.height + this.size;
+                if (this.y > canvas.height + this.size) this.y = -this.size;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.fillStyle = this.color;
+                
+                switch (this.type) {
+                    case 0: // Circle
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 1: // Square
+                        ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                        break;
+                        
+                    case 2: // Triangle
+                        ctx.beginPath();
+                        ctx.moveTo(0, -this.size / 2);
+                        ctx.lineTo(-this.size / 2, this.size / 2);
+                        ctx.lineTo(this.size / 2, this.size / 2);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                        
+                    case 3: // Equation
+                        ctx.font = `${this.size}px Arial`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(this.equations[Math.floor(Math.random() * this.equations.length)], 0, 0);
+                        break;
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Create shapes
+        const shapes = [];
+        const shapeCount = Math.min(40, Math.floor(canvas.width * canvas.height / 5000));
+        
+        for (let i = 0; i < shapeCount; i++) {
+            shapes.push(new MathShape());
+        }
+        
+        // Draw connections between shapes
+        function drawConnections() {
+            for (let i = 0; i < shapes.length; i++) {
+                for (let j = i + 1; j < shapes.length; j++) {
+                    const dx = shapes[i].x - shapes[j].x;
+                    const dy = shapes[i].y - shapes[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Draw connection if shapes are close enough
+                    if (distance < 200) {
+                        const alpha = 1 - distance / 200;
+                        ctx.beginPath();
+                        ctx.moveTo(shapes[i].x, shapes[i].y);
+                        ctx.lineTo(shapes[j].x, shapes[j].y);
+                        ctx.strokeStyle = `rgba(63, 81, 181, ${alpha * 0.3})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background with a subtle gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#f5f7ff');
+            gradient.addColorStop(1, '#e6e9ff');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw connections first (so they appear behind shapes)
+            drawConnections();
+            
+            // Update and draw shapes
+            shapes.forEach(shape => {
+                shape.update();
+                shape.draw();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Start animation
+        animate();
+        
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

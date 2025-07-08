@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Atom Builder Simulator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 20px;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        h1 img {
+            height: 60px;
+        }
+
+        .atom-display-container {
+            grid-column: 1;
+            position: relative;
+        }
+
+        .atom-display {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            border: 2px dashed rgba(100, 100, 255, 0.3);
+            border-radius: 50%;
+            background: rgba(240, 248, 255, 0.5);
+            box-shadow: inset 0 0 20px rgba(100, 100, 255, 0.1);
+        }
+
+        .nucleus-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .nucleus {
+            position: relative;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #d32f2f);
+            box-shadow: 0 0 15px rgba(211, 47, 47, 0.5);
+            transition: all 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8em;
+            overflow: hidden;
+        }
+
+        .electron-shells {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .electron {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: radial-gradient(circle at 30% 30%, #4dabf7, #1976d2);
+            border-radius: 50%;
+            z-index: 20;
+            box-shadow: 0 0 8px #4dabf7;
+        }
+
+        .orbit-line {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 1px solid rgba(100, 100, 100, 0.15);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes orbit {
+            from {
+                transform: rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg);
+            }
+        }
+
+        .electron-orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 14px;
+            height: 14px;
+            animation: orbit var(--orbit-speed) linear infinite;
+            transform-origin: center;
+        }
+
+        .controls-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .control-group h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .particle-control {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+
+        .particle-control label {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .counter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .count-display {
+            min-width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .atom-info-panel {
+            grid-column: 2;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .atom-info-panel h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .info-card h4 {
+            margin: 0 0 8px 0;
+            color: #3498db;
+            font-size: 1em;
+        }
+
+        .info-card p {
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .element-name {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            color: white;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 1.8em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .reset-section {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        #reset-btn {
+            background: #e74c3c;
+            padding: 10px 25px;
+            font-size: 1.1em;
+        }
+
+        #reset-btn:hover {
+            background: #c0392b;
+        }
+
+        .configuration {
+            grid-column: 1 / -1;
+            font-family: monospace;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px;
+            background: #2c3e50;
+            color: #fff;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .proton-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #ff5252;
+            border-radius: 50%;
+            box-shadow: 0 0 4px #ff5252;
+        }
+
+        .neutron-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #42a5f5;
+            border-radius: 50%;
+            box-shadow: 0 0 4px #42a5f5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .atom-display-container {
+                grid-column: 1;
+            }
+            .atom-info-panel {
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><img src="https://cdn-icons-png.flaticon.com/512/2659/2659360.png" alt="Atom"> Advanced Atom Builder</h1>
+        </header>
+        
+        <div class="atom-display-container">
+            <div class="atom-display">
+                <div class="nucleus-container">
+                    <div class="nucleus" id="nucleus"></div>
+                </div>
+                <div class="electron-shells" id="electron-shells"></div>
+            </div>
+        </div>
+        
+        <div class="controls-panel">
+            <div class="control-group">
+                <h3>Particle Controls</h3>
+                
+                <div class="particle-control">
+                    <label>Protons:</label>
+                    <div class="counter">
+                        <button id="remove-proton">-</button>
+                        <span class="count-display" id="proton-count">0</span>
+                        <button id="add-proton">+</button>
+                    </div>
+                </div>
+                
+                <div class="particle-control">
+                    <label>Neutrons:</label>
+                    <div class="counter">
+                        <button id="remove-neutron">-</button>
+                        <span class="count-display" id="neutron-count">0</span>
+                        <button id="add-neutron">+</button>
+                    </div>
+                </div>
+                
+                <div class="particle-control">
+                    <label>Electrons:</label>
+                    <div class="counter">
+                        <button id="remove-electron">-</button>
+                        <span class="count-display" id="electron-count">0</span>
+                        <button id="add-electron">+</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Atom Properties</h3>
+                <div class="particle-control">
+                    <label>Atomic Number:</label>
+                    <span class="count-display" id="atomic-number">0</span>
+                </div>
+                <div class="particle-control">
+                    <label>Mass Number:</label>
+                    <span class="count-display" id="atomic-mass">0</span>
+                </div>
+                <div class="particle-control">
+                    <label>Net Charge:</label>
+                    <span class="count-display" id="charge">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="atom-info-panel">
+            <h2>Element Information</h2>
+            <div class="element-name" id="element-name">None</div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>Symbol</h4>
+                    <p id="element-symbol">-</p>
+                </div>
+                <div class="info-card">
+                    <h4>Period</h4>
+                    <p id="period">-</p>
+                </div>
+                <div class="info-card">
+                    <h4>Group</h4>
+                    <p id="group">-</p>
+                </div>
+                <div class="info-card">
+                    <h4>Category</h4>
+                    <p id="category">-</p>
+                </div>
+                <div class="info-card">
+                    <h4>State at STP</h4>
+                    <p id="state">-</p>
+                </div>
+                <div class="info-card">
+                    <h4>Discovery Year</h4>
+                    <p id="discovery">-</p>
+                </div>
+            </div>
+            
+            <div class="configuration" id="electron-config">Electron Configuration: -</div>
+        </div>
+        
+        <div class="reset-section">
+            <button id="reset-btn">Reset Atom</button>
+        </div>
+    </div>
+    
+    <script>
+        const elements = [
+            { name: "None", symbol: "-", period: 0, group: 0, category: "-", state: "-", discovery: "-", config: "" },
+            { name: "Hydrogen", symbol: "H", period: 1, group: 1, category: "Nonmetal", state: "Gas", discovery: "1766", config: "1s¹" },
+            { name: "Helium", symbol: "He", period: 1, group: 18, category: "Noble Gas", state: "Gas", discovery: "1868", config: "1s²" },
+            { name: "Lithium", symbol: "Li", period: 2, group: 1, category: "Alkali Metal", state: "Solid", discovery: "1817", config: "1s² 2s¹" },
+            { name: "Beryllium", symbol: "Be", period: 2, group: 2, category: "Alkaline Earth Metal", state: "Solid", discovery: "1798", config: "1s² 2s²" },
+            { name: "Boron", symbol: "B", period: 2, group: 13, category: "Metalloid", state: "Solid", discovery: "1808", config: "1s² 2s² 2p¹" },
+            { name: "Carbon", symbol: "C", period: 2, group: 14, category: "Nonmetal", state: "Solid", discovery: "Ancient", config: "1s² 2s² 2p²" },
+            { name: "Nitrogen", symbol: "N", period: 2, group: 15, category: "Nonmetal", state: "Gas", discovery: "1772", config: "1s² 2s² 2p³" },
+            { name: "Oxygen", symbol: "O", period: 2, group: 16, category: "Nonmetal", state: "Gas", discovery: "1774", config: "1s² 2s² 2p⁴" },
+            { name: "Fluorine", symbol: "F", period: 2, group: 17, category: "Halogen", state: "Gas", discovery: "1886", config: "1s² 2s² 2p⁵" },
+            { name: "Neon", symbol: "Ne", period: 2, group: 18, category: "Noble Gas", state: "Gas", discovery: "1898", config: "1s² 2s² 2p⁶" },
+            { name: "Sodium", symbol: "Na", period: 3, group: 1, category: "Alkali Metal", state: "Solid", discovery: "1807", config: "1s² 2s² 2p⁶ 3s¹" },
+            { name: "Magnesium", symbol: "Mg", period: 3, group: 2, category: "Alkaline Earth Metal", state: "Solid", discovery: "1755", config: "1s² 2s² 2p⁶ 3s²" },
+            { name: "Aluminum", symbol: "Al", period: 3, group: 13, category: "Post-Transition Metal", state: "Solid", discovery: "1825", config: "1s² 2s² 2p⁶ 3s² 3p¹" },
+            { name: "Silicon", symbol: "Si", period: 3, group: 14, category: "Metalloid", state: "Solid", discovery: "1824", config: "1s² 2s² 2p⁶ 3s² 3p²" },
+            { name: "Phosphorus", symbol: "P", period: 3, group: 15, category: "Nonmetal", state: "Solid", discovery: "1669", config: "1s² 2s² 2p⁶ 3s² 3p³" },
+            { name: "Sulfur", symbol: "S", period: 3, group: 16, category: "Nonmetal", state: "Solid", discovery: "Ancient", config: "1s² 2s² 2p⁶ 3s² 3p⁴" },
+            { name: "Chlorine", symbol: "Cl", period: 3, group: 17, category: "Halogen", state: "Gas", discovery: "1774", config: "1s² 2s² 2p⁶ 3s² 3p⁵" },
+            { name: "Argon", symbol: "Ar", period: 3, group: 18, category: "Noble Gas", state: "Gas", discovery: "1894", config: "1s² 2s² 2p⁶ 3s² 3p⁶" }
+        ];
+
+        let protons = 0;
+        let neutrons = 0;
+        let electrons = 0;
+
+        const protonCount = document.getElementById("proton-count");
+        const neutronCount = document.getElementById("neutron-count");
+        const electronCount = document.getElementById("electron-count");
+        const nucleus = document.getElementById("nucleus");
+        const electronShells = document.getElementById("electron-shells");
+        const elementName = document.getElementById("element-name");
+        const elementSymbol = document.getElementById("element-symbol");
+        const atomicNumber = document.getElementById("atomic-number");
+        const atomicMass = document.getElementById("atomic-mass");
+        const chargeDisplay = document.getElementById("charge");
+        const periodDisplay = document.getElementById("period");
+        const groupDisplay = document.getElementById("group");
+        const categoryDisplay = document.getElementById("category");
+        const stateDisplay = document.getElementById("state");
+        const discoveryDisplay = document.getElementById("discovery");
+        const configDisplay = document.getElementById("electron-config");
+        const resetBtn = document.getElementById("reset-btn");
+
+        document.getElementById("add-proton").addEventListener("click", () => updateParticleCount('proton', 1));
+        document.getElementById("remove-proton").addEventListener("click", () => updateParticleCount('proton', -1));
+        document.getElementById("add-neutron").addEventListener("click", () => updateParticleCount('neutron', 1));
+        document.getElementById("remove-neutron").addEventListener("click", () => updateParticleCount('neutron', -1));
+        document.getElementById("add-electron").addEventListener("click", () => updateParticleCount('electron', 1));
+        document.getElementById("remove-electron").addEventListener("click", () => updateParticleCount('electron', -1));
+        resetBtn.addEventListener("click", resetAtom);
+
+        function updateParticleCount(particle, delta) {
+            switch(particle) {
+                case 'proton':
+                    protons = Math.max(0, protons + delta);
+                    if (delta > 0 && electrons < protons) electrons = protons;
+                    break;
+                case 'neutron':
+                    neutrons = Math.max(0, neutrons + delta);
+                    break;
+                case 'electron':
+                    electrons = Math.max(0, electrons + delta);
+                    break;
+            }
+            updateAtom();
+        }
+
+        function resetAtom() {
+            protons = 0;
+            neutrons = 0;
+            electrons = 0;
+            updateAtom();
+        }
+
+        function updateAtom() {
+            protonCount.textContent = protons;
+            neutronCount.textContent = neutrons;
+            electronCount.textContent = electrons;
+            atomicNumber.textContent = protons;
+            atomicMass.textContent = protons + neutrons;
+            const charge = protons - electrons;
+            chargeDisplay.textContent = charge === 0 ? "0" : charge > 0 ? `+${charge}` : charge;
+            const element = protons < elements.length ? elements[protons] : {
+                name: "Unknown",
+                symbol: "?",
+                period: "-",
+                group: "-",
+                category: "-",
+                state: "-",
+                discovery: "-",
+                config: ""
+            };
+            elementName.textContent = element.name;
+            elementSymbol.textContent = element.symbol;
+            periodDisplay.textContent = element.period;
+            groupDisplay.textContent = element.group;
+            categoryDisplay.textContent = element.category;
+            stateDisplay.textContent = element.state;
+            discoveryDisplay.textContent = element.discovery;
+            configDisplay.textContent = `Electron Configuration: ${element.config || "-"}`;
+            updateNucleus();
+            updateElectronShells();
+        }
+
+        function updateNucleus() {
+            nucleus.innerHTML = "";
+            const totalParticles = protons + neutrons;
+            if (totalParticles === 0) return;
+            const baseSize = 50;
+            const sizeIncrement = 2;
+            const nucleusSize = baseSize + totalParticles * sizeIncrement;
+            nucleus.style.width = `${nucleusSize}px`;
+            nucleus.style.height = `${nucleusSize}px`;
+            for (let i = 0; i < protons + neutrons; i++) {
+                const particle = document.createElement("div");
+                const angle = (i / totalParticles) * Math.PI * 2;
+                const distance = Math.random() * nucleusSize * 0.35;
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+                if (i < protons) {
+                    particle.className = "proton-dot";
+                } else {
+                    particle.className = "neutron-dot";
+                }
+                particle.style.left = `calc(50% + ${x}px)`;
+                particle.style.top = `calc(50% + ${y}px)`;
+                nucleus.appendChild(particle);
+            }
+        }
+
+        function updateElectronShells() {
+            electronShells.innerHTML = "";
+            if (electrons === 0) return;
+            const shellCapacities = [2, 8, 8];
+            let electronsLeft = electrons;
+            let shellStartRadius = 60;
+            let shellGap = 50;
+            for (let shellIndex = 0; shellIndex < shellCapacities.length; shellIndex++) {
+                if (electronsLeft <= 0) break;
+                const shellCapacity = shellCapacities[shellIndex];
+                const electronsInShell = Math.min(electronsLeft, shellCapacity);
+                electronsLeft -= electronsInShell;
+                const shellRadius = shellStartRadius + shellGap * shellIndex;
+                const orbitSpeed = 5 + shellIndex * 2 + "s";
+                const orbitLine = document.createElement("div");
+                orbitLine.className = "orbit-line";
+                orbitLine.style.width = `${shellRadius * 2}px`;
+                orbitLine.style.height = `${shellRadius * 2}px`;
+                electronShells.appendChild(orbitLine);
+                for (let j = 0; j < electronsInShell; j++) {
+                    const orbit = document.createElement("div");
+                    orbit.className = "electron-orbit";
+                    orbit.style.setProperty("--orbit-radius", `${shellRadius}px`);
+                    orbit.style.setProperty("--orbit-speed", orbitSpeed);
+                    const angle = (j / electronsInShell) * Math.PI * 2;
+                    const delayOffset = Math.random() * 2;
+                    orbit.style.animationDelay = `-${delayOffset}s`;
+                    const electron = document.createElement("div");
+                    electron.className = "electron";
+                    orbit.appendChild(electron);
+                    electronShells.appendChild(orbit);
+                }
+            }
+        }
+
+        updateAtom();
+    </script>
+</body>
+</html>

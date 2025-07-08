@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biology Simulations | Simulation.com</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4A6FFF;
+            --primary-dark: #3451D1;
+            --secondary: #4CAF50;
+            --accent: #8BC34A;
+            --dark: #1A2238;
+            --light: #F8F9FC;
+            --gray: #6C757D;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--dark);
+            background-color: #e8f5e9;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 15px 0;
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            padding: 8px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 40px;
+            transition: var(--transition);
+        }
+
+        .logo span {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            position: relative;
+            padding: 5px 0;
+            transition: var(--transition);
+        }
+
+        .nav-links a:not(.btn):after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+
+        .nav-links a:not(.btn):hover:after {
+            width: 100%;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 200px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 10px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .dropdown:hover .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(74, 111, 255, 0.05);
+            color: var(--primary);
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(74, 111, 255, 0.3);
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(74, 111, 255, 0.4);
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Biology Content */
+        .simulations-container {
+            padding: 150px 0 100px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            color: #2E7D32;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .page-title:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 30px auto 60px;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 50px;
+            position: relative;
+        }
+
+        .search-box {
+            display: flex;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-box button {
+            padding: 0 25px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .search-box button:hover {
+            background: #388E3C;
+        }
+
+        .simulations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .simulation-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+            z-index: 2;
+        }
+
+        .simulation-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-image {
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .simulation-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .simulation-card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        .btn-play {
+            background: var(--accent) !important;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-play:hover {
+            background: #7CB342 !important;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #2E7D32;
+        }
+
+        .card-content p {
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 70px 0 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .footer-column p {
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-column ul li a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .footer-column ul li {
+            color: #a0aec0;
+        }
+
+        .copyright {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+
+        /* Background Canvas */
+        #bio-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .simulations-container {
+                padding: 130px 0 80px;
+            }
+            
+            .page-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                right: -100%;
+                width: 280px;
+                height: calc(100vh - 80px);
+                background: white;
+                flex-direction: column;
+                padding: 40px 20px;
+                transition: var(--transition);
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+                z-index: 999;
+            }
+            
+            .nav-links.active {
+                right: 0;
+            }
+            
+            .dropdown-content {
+                position: static;
+                width: 100%;
+                box-shadow: none;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                padding: 10px 0 0 20px;
+            }
+            
+            .page-title {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .page-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bio-canvas"></canvas>
+    
+    <header id="header">
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwLjUgMTUuNUwxMiAxNEwxMy41IDE1LjVMMTUgMTdIMThWMTVIMTZMMTQuNSAxMy41TDE2IDEyTDE0LjUgMTAuNUwxMyA5VjZIMTFWOUw5LjUgMTAuNUw4IDEyTDkuNSAxMy41TDggMTVINlYxN0g4TDkuNSAxNS41Wk0xMiAyMkM2LjQ3NyAyMiAyIDE3LjUyMyAyIDEyQzIgNi40NzcgNi40NzcgMiAxMiAyQzE3LjUyMyAyIDIyIDYuNDc3IDIyIDEyQzIyIDE3LjUyMyAxNy41MjMgMjIgMTIgMjJaTTQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBDMTYuNDE4IDIwIDIwIDE2LjQxOCAyMCAxMkMyMCA3LjU4MiAxNi40MTggNCAxMiA0QzcuNTgyIDQgNCA3LjU4MiA0IDEyWiIgZmlsbD0iIzRBNkZGRiIvPgo8L3N2Zz4=" alt="logo" class="logo-img">
+                    <span>SIMULATION.COM</span>
+                </div>
+                <div class="menu-toggle" id="mobile-menu">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="nav-links" id="nav-links">
+                    <a href="homepage.html"><i class="fas fa-home"></i> Home</a>
+                    <div class="dropdown">
+                        <a href="#"><i class="fas fa-flask"></i> Simulations <i class="fas fa-chevron-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="phy-page.html"><i class="fas fa-atom"></i> Physics</a>
+                            <a href="chem-page.html"><i class="fas fa-vial"></i> Chemistry</a>
+                            <a href="bio-page.html"><i class="fas fa-dna"></i> Biology</a>
+                            <a href="math-page.html"><i class="fas fa-calculator"></i> Math</a>
+                        </div>
+                    </div>
+                    <a href="#"><i class="fas fa-book"></i> Learn</a>
+                    <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="simulations-container">
+        <div class="container">
+            <h1 class="page-title">Interactive Biology Simulations</h1>
+            <p class="page-subtitle">Explore fundamental Biology concepts through interactive simulations</p>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search simulations...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            
+            <div class="simulations-grid" id="simulations-grid">
+                <div class="simulation-card" data-tags="Mendelian and non-mendelian crosses">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM4QkMzNEEiIGZpbGwtb3BhY2l0eT0iMC4yIi8+CjxwYXRoIGQ9Ik0xMDAgNzVDMTAwIDYxLjE5MiAxMTEuMTkyIDUwIDEyNSA1MEgzNzVDMzg4LjgwOCA1MCA0MDAgNjEuMTkyIDQwMCA3NVYyMjVDNDAwIDIzOC44MDggMzg4LjgwOCAyNTAgMzc1IDI1MEgxMjVDMTExLjE5MiAyNTAgMTAwIDIzOC44MDggMTAwIDIyNVY3NVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0Q0FGNTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIxODAiIGN5PSIxMjUiIHI9IjE1IiBmaWxsPSIjNEJBRUU0Ii8+CjxjaXJjbGUgY3g9IjI0MCIgY3k9IjEyNSIgcj0iMTUiIGZpbGw9IiM0QkFFRTQiLz4KPGNpcmNsZSBjeD0iMzIwIiBjeT0iMTI1IiByPSIxNSIgZmlsbD0iI0ZGQjNCQyIvPgo8Y2lyY2xlIGN4PSIxODAiIGN5PSIxNzUiIHI9IjE1IiBmaWxsPSIjNEJBRUU0Ii8+CjxjaXJjbGUgY3g9IjI0MCIgY3k9IjE3NSIgcj0iMTUiIGZpbGw9IiNGRkIzQkMiLz4KPGNpcmNsZSBjeD0iMzIwIiBjeT0iMTc1IiByPSIxNSIgZmlsbD0iI0ZGQjNCQyIvPgo8bGluZSB4MT0iMTgwIiB5MT0iMTQwIiB4Mj0iMzIwIiB5Mj0iMTQwIiBzdHJva2U9IiM0Q0FGNTAiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWRhc2hhcnJheT0iNSw1Ii8+CjxsaW5lIHgxPSIxODAiIHkxPSIxNjAiIHgyPSIzMjAiIHkyPSIxNjAiIHN0cm9rZT0iIzRDQUY1MCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtZGFzaGFycmF5PSI1LDUiLz4KPC9zdmc+" alt="Mendelian crosses">
+                        <div class="card-overlay">
+                            <a href="bio-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Mendelian Inheritance</h3>
+                        <p>Explore how traits pass from parents to offspring</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 2 min</span>
+                            <span><i class="fas fa-dna"></i> Genetics</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-card" data-tags="dna replication cell biology">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM4QkMzNEEiIGZpbGwtb3BhY2l0eT0iMC4yIi8+CjxwYXRoIGQ9Ik0xMDAgNzVDMTAwIDYxLjE5MiAxMTEuMTkyIDUwIDEyNSA1MEgzNzVDMzg4LjgwOCA1MCA0MDAgNjEuMTkyIDQwMCA3NVYyMjVDNDAwIDIzOC44MDggMzg4LjgwOCAyNTAgMzc1IDI1MEgxMjVDMTExLjE5MiAyNTAgMTAwIDIzOC44MDggMTAwIDIyNVY3NVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0Q0FGNTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTcwIDEyMEwyMjAgMTAwTDI3MCAxNDBMMzIwIDEyMEwzNzAgMTQwIiBzdHJva2U9IiM0QkFFRTQiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0xNzAgMTYwTDIyMCAxODBMMjcwIDE0MEwzMjAgMTYwTDM3MCAxNDAiIHN0cm9rZT0iI0ZGQjNCQyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPGNpcmNsZSBjeD0iMTcwIiBjeT0iMTIwIiByPSIxMCIgZmlsbD0iIzRCQUVFNCIvPgo8Y2lyY2xlIGN4PSIyMjAiIGN5PSIxMDAiIHI9IjEwIiBmaWxsPSIjNEJBRUU0Ii8+CjxjaXJjbGUgY3g9IjI3MCIgY3k9IjE0MCIgcj0iMTAiIGZpbGw9IiM0QkFFRTQiLz4KPGNpcmNsZSBjeD0iMzIwIiBjeT0iMTIwIiByPSIxMCIgZmlsbD0iIzRCQUVFNCIvPgo8Y2lyY2xlIGN4PSIzNzAiIGN5PSIxNDAiIHI9IjEwIiBmaWxsPSIjNEJBRUU0Ii8+CjxjaXJjbGUgY3g9IjE3MCIgY3k9IjE2MCIgcj0iMTAiIGZpbGw9IiNGRkIzQkMiLz4KPGNpcmNsZSBjeD0iMjIwIiBjeT0iMTgwIiByPSIxMCIgZmlsbD0iI0ZGQjNCQyIvPgo8Y2lyY2xlIGN4PSIyNzAiIGN5PSIxNDAiIHI9IjEwIiBmaWxsPSIjRkZCM0JDIi8+CjxjaXJjbGUgY3g9IjMyMCIgY3k9IjE2MCIgcj0iMTAiIGZpbGw9IiNGRkIzQkMiLz4KPGNpcmNsZSBjeD0iMzcwIiBjeT0iMTQwIiByPSIxMCIgZmlsbD0iI0ZGQjNCQyIvPgo8L3N2Zz4=" alt="DNA Replication">
+                        <div class="card-overlay">
+                            <a href="#" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>DNA Replication [Coming Soon]</h3>
+                        <p>Explore the process of DNA copying and cell division</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-microscope"></i> Molecular</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulation-card" data-tags="ecosystem population ecology">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM4QkMzNEEiIGZpbGwtb3BhY2l0eT0iMC4yIi8+CjxwYXRoIGQ9Ik0xMDAgNzVDMTAwIDYxLjE5MiAxMTEuMTkyIDUwIDEyNSA1MEgzNzVDMzg4LjgwOCA1MCA0MDAgNjEuMTkyIDQwMCA3NVYyMjVDNDAwIDIzOC44MDggMzg4LjgwOCAyNTAgMzc1IDI1MEgxMjVDMTExLjE5MiAyNTAgMTAwIDIzOC44MDggMTAwIDIyNVY3NVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0Q0FGNTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIxNTAiIGN5PSIxNTAiIHI9IjMwIiBmaWxsPSIjNEJBRUU0IiBvcGFjaXR5PSIwLjciLz4KPGNpcmNsZSBjeD0iMjAwIiBjeT0iMTIwIiByPSIyMCIgZmlsbD0iIzRCQUVFNCIgb3BhY2l0eT0iMC43Ii8+CjxjaXJjbGUgY3g9IjI4MCIgY3k9IjE0MCIgcj0iMjUiIGZpbGw9IiM0QkFFRTQiIG9wYWNpdHk9IjAuNyIvPgo8Y2lyY2xlIGN4PSIzNTAiIGN5PSIxNjAiIHI9IjE1IiBmaWxsPSIjNEJBRUU0IiBvcGFjaXR5PSIwLjciLz4KPGNpcmNsZSBjeD0iMjAwIiBjeT0iMTgwIiByPSIyMCIgZmlsbD0iI0ZGQjNCQyIgb3BhY2l0eT0iMC43Ii8+CjxjaXJjbGUgY3g9IjI4MCIgY3k9IjE5MCIgcj0iMjUiIGZpbGw9IiNGRkIzQkMiIG9wYWNpdHk9IjAuNyIvPgo8Y2lyY2xlIGN4PSIzNTAiIGN5PSIyMDAiIHI9IjE1IiBmaWxsPSIjRkZCM0JDIiBvcGFjaXR5PSIwLjciLz4KPGNpcmNsZSBjeD0iMTUwIiBjeT0iMjAwIiByPSIzMCIgZmlsbD0iI0ZGQjNCQyIgb3BhY2l0eT0iMC43Ii8+CjxwYXRoIGQ9Ik0xNTAgMTUwTDE4MCAxNjAiIHN0cm9rZT0iIzRDQUY1MCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0xNTAgMTUwTDE4MCAxNDAiIHN0cm9rZT0iIzRDQUY1MCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0yMDAgMTIwTDIzMCAxMzAiIHN0cm9rZT0iIzRDQUY1MCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0yODAgMTQwTDMxMCAxNTAiIHN0cm9rZT0iIzRDQUY1MCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0zNTAgMTYwTDMxMCAxNTAiIHN0cm9rZT0iIzRDQUY1MCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0yMDAgMTgwTDIzMCAxNzAiIHN0cm9rZT0iI0ZGQjNCQyIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0yODAgMTkwTDMxMCAyMDAiIHN0cm9rZT0iI0ZGQjNCQyIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0zNTAgMjAwTDMxMCAyMDAiIHN0cm9rZT0iI0ZGQjNCQyIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0xNTAgMjAwTDE4MCAxOTAiIHN0cm9rZT0iI0ZGQjNCQyIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjwvc3ZnPg==" alt="Ecosystem Dynamics">
+                        <div class="card-overlay">
+                            <a href="ppln-sim.html" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Ecosystem Dynamics [Coming Soon]</h3>
+                        <p>Simulate populations of organisms in their environment</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> 4 min</span>
+                            <span><i class="fas fa-leaf"></i> Ecology</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="cell structure organelles">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM4QkMzNEEiIGZpbGwtb3BhY2l0eT0iMC4yIi8+CjxwYXRoIGQ9Ik0xMDAgNzVDMTAwIDYxLjE5MiAxMTEuMTkyIDUwIDEyNSA1MEgzNzVDMzg4LjgwOCA1MCA0MDAgNjEuMTkyIDQwMCA3NVYyMjVDNDAwIDIzOC44MDggMzg4LjgwOCAyNTAgMzc1IDI1MEgxMjVDMTExLjE5MiAyNTAgMTAwIDIzOC44MDggMTAwIDIyNVY3NVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0Q0FGNTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxNTAiIHI9IjYwIiBmaWxsPSIjRkZGRkZGIiBzdHJva2U9IiM0Q0FGNTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxNTAiIHI9IjQwIiBmaWxsPSIjNEJBRUU0IiBvcGFjaXR5PSIwLjUiLz4KPGNpcmNsZSBjeD0iMjIwIiBjeT0iMTIwIiByPSIxNSIgZmlsbD0iI0ZGQjNCQyIvPgo8Y2lyY2xlIGN4PSIyODAiIGN5PSIxMjAiIHI9IjE1IiBmaWxsPSIjRkZCM0JDIi8+CjxwYXRoIGQ9Ik0yMjAgMTgwTDI1MCAyMDBMMjgwIDE4MCIgc3Ryb2tlPSIjNEJBRUU0IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxNTAiIHI9IjEwIiBmaWxsPSIjNEJBRUU0Ii8+Cjwvc3ZnPg==" alt="Cell Structure">
+                        <div class="card-overlay">
+                            <a href="#" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Cell Structure [Coming Soon]</h3>
+                        <p>Explore the organelles and functions of animal and plant cells</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-seedling"></i> Cellular</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="photosynthesis chloroplasts energy">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM4QkMzNEEiIGZpbGwtb3BhY2l0eT0iMC4yIi8+CjxwYXRoIGQ9Ik0xMDAgNzVDMTAwIDYxLjE5MiAxMTEuMTkyIDUwIDEyNSA1MEgzNzVDMzg4LjgwOCA1MCA0MDAgNjEuMTkyIDQwMCA3NVYyMjVDNDAwIDIzOC44MDggMzg4LjgwOCAyNTAgMzc1IDI1MEgxMjVDMTExLjE5MiAyNTAgMTAwIDIzOC44MDggMTAwIDIyNVY3NVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0Q0FGNTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTUwIDEyMEwyMDAgMTUwTDE1MCAxODBMMjAwIDIxMCIgc3Ryb2tlPSIjNEJBRUU0IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMzAwIDEyMEwyNTAgMTUwTDMwMCAxODBMMjUwIDIxMCIgc3Ryb2tlPSIjNEJBRUU0IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMjI1IDEwMEwyMjUgMjAwIiBzdHJva2U9IiNGRkIzQkMiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWRhc2hhcnJheT0iNSw1Ii8+CjxjaXJjbGUgY3g9IjIyNSIgY3k9IjE1MCIgcj0iNDAiIGZpbGw9IiM0QkFFRTQiIGZpbGwtb3BhY2l0eT0iMC4zIi8+CjxjaXJjbGUgY3g9IjIyNSIgY3k9IjE1MCIgcj0iMjUiIGZpbGw9IiM0QkFFRTQiIGZpbGwtb3BhY2l0eT0iMC41Ii8+CjxjaXJjbGUgY3g9IjIyNSIgY3k9IjE1MCIgcj0iMTAiIGZpbGw9IiM0QkFFRTQiIGZpbGwtb3BhY2l0eT0iMC44Ii8+Cjwvc3ZnPg==" alt="Photosynthesis">
+                        <div class="card-overlay">
+                            <a href="#" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Photosynthesis [Coming Soon]</h3>
+                        <p>Understand how plants convert light energy into chemical energy</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-sun"></i> Plant Biology</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulation-card" data-tags="immune system pathogens">
+                    <div class="card-image">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDUwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIiByeD0iMTAiIGZpbGw9IiM4QkMzNEEiIGZpbGwtb3BhY2l0eT0iMC4yIi8+CjxwYXRoIGQ9Ik0xMDAgNzVDMTAwIDYxLjE5MiAxMTEuMTkyIDUwIDEyNSA1MEgzNzVDMzg4LjgwOCA1MCA0MDAgNjEuMTkyIDQwMCA3NVYyMjVDNDAwIDIzOC44MDggMzg4LjgwOCAyNTAgMzc1IDI1MEgxMjVDMTExLjE5MiAyNTAgMTAwIDIzOC44MDggMTAwIDIyNVY3NVoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM0Q0FGNTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxNTAiIHI9IjYwIiBmaWxsPSIjRkZGRkZGIiBzdHJva2U9IiM0Q0FGNTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSIyMDAiIGN5PSIxMDAiIHI9IjIwIiBmaWxsPSIjNEJBRUU0Ii8+CjxjaXJjbGUgY3g9IjMwMCIgY3k9IjEwMCIgcj0iMjAiIGZpbGw9IiM0QkFFRTQiLz4KPGNpcmNsZSBjeD0iMjAwIiBjeT0iMjAwIiByPSIyMCIgZmlsbD0iIzRCQUVFNCIvPgo8Y2lyY2xlIGN4PSIzMDAiIGN5PSIyMDAiIHI9IjIwIiBmaWxsPSIjNEJBRUU0Ii8+CjxjaXJjbGUgY3g9IjE1MCIgY3k9IjE1MCIgcj0iMTUiIGZpbGw9IiNGRkIzQkMiLz4KPGNpcmNsZSBjeD0iMzUwIiBjeT0iMTUwIiByPSIxNSIgZmlsbD0iI0ZGQjNCQyIvPgo8Y2lyY2xlIGN4PSIyNTAiIGN5PSIxMDAiIHI9IjE1IiBmaWxsPSIjRkZCM0JDIi8+CjxjaXJjbGUgY3g9IjI1MCIgY3k9IjIwMCIgcj0iMTUiIGZpbGw9IiNGRkIzQkMiLz4KPGNpcmNsZSBjeD0iMTgwIiBjeT0iMTgwIiByPSIxMiIgZmlsbD0iI0ZGQjNCQyIvPgo8Y2lyY2xlIGN4PSIzMjAiIGN5PSIxMjAiIHI9IjEyIiBmaWxsPSIjRkZCM0JDIi8+Cjwvc3ZnPg==" alt="Immune Response">
+                        <div class="card-overlay">
+                            <a href="#" class="btn btn-play"><i class="fas fa-play"></i> Launch</a>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>Immune Response[Coming Soon]</h3>
+                        <p>Explore how the body defends against pathogens and infections</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> soon</span>
+                            <span><i class="fas fa-shield-virus"></i> Immunology</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>simulation.com</h3>
+                    <p>Practical simulations for Education of all Subjects. Let's experience it together.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="#">Custom simulations</a></li>
+                        <li><a href="#">Mobile App simulations</a></li>
+                        <li><a href="#">AI integrated simulation Projects</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Our Team</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Ethiopia, Hawassa</li>
+                        <li><i class="fas fa-envelope"></i> info@simulation.com</li>
+                        <li><i class="fas fa-phone"></i> +251 903 932 959</li>
+                        <li><i class="fas fa-globe"></i> www.simulation.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 simulation.com. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navLinks = document.getElementById('nav-links');
+        
+        mobileMenu.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const simulationCards = document.querySelectorAll('.simulation-card');
+        
+        searchInput.addEventListener('input', filterSimulations);
+        searchBtn.addEventListener('click', filterSimulations);
+        
+        function filterSimulations() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            simulationCards.forEach(card => {
+                const tags = card.getAttribute('data-tags').toLowerCase();
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                
+                if (tags.includes(searchTerm) || title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        const canvas = document.getElementById('bio-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        class Cell {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 20 + 5;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                this.color = `rgba(${Math.floor(Math.random() * 50 + 50)}, ${Math.floor(Math.random() * 150 + 100)}, ${Math.floor(Math.random() * 50 + 50)}, ${Math.random() * 0.3 + 0.1})`;
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                if (this.x < -this.radius) this.x = canvas.width + this.radius;
+                if (this.x > canvas.width + this.radius) this.x = -this.radius;
+                if (this.y < -this.radius) this.y = canvas.height + this.radius;
+                if (this.y > canvas.height + this.radius) this.y = -this.radius;
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius / 3, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, ${Math.floor(Math.random() * 100 + 150)}, ${Math.floor(Math.random() * 100 + 150)}, 0.5)`;
+                ctx.fill();
+                for (let i = 0; i < 3; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * this.radius * 0.7;
+                    const organelleX = this.x + Math.cos(angle) * distance;
+                    const organelleY = this.y + Math.sin(angle) * distance;
+                    const organelleRadius = Math.random() * this.radius * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(organelleX, organelleY, organelleRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${Math.floor(Math.random() * 100)}, ${Math.floor(Math.random() * 200)}, ${Math.floor(Math.random() * 100)}, 0.6)`;
+                    ctx.fill();
+                }
+            }
+        }
+        
+        const cells = [];
+        const cellCount = Math.min(30, Math.floor(canvas.width * canvas.height / 15000));
+        
+        for (let i = 0; i < cellCount; i++) {
+            cells.push(new Cell());
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#e8f5e9');
+            gradient.addColorStop(1, '#c8e6c9');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            cells.forEach(cell => {
+                cell.update();
+                cell.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
